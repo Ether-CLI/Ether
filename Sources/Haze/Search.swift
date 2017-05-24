@@ -33,7 +33,7 @@ public final class Search: Command {
     public let console: ConsoleProtocol
     public let client = PackageJSONFetcher()
     
-    init(console: ConsoleProtocol) {
+    public init(console: ConsoleProtocol) {
         self.console = console
     }
     
