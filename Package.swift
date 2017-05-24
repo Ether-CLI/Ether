@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "Haze",
     targets: [
-        Target(name: "Haze"),
+        Target(name: "Helpers"),
+        Target(name: "Haze", dependencies: ["Helpers"]),
         Target(name: "Executable", dependencies: ["Haze"])
     ],
     dependencies: [
