@@ -1,5 +1,7 @@
 import Helpers
 import Console
+import Foundation
+import Core
 
 public final class Search: Command {
     public let id = "search"
@@ -45,43 +47,50 @@ public final class Search: Command {
         let maxResults = arguments.options["max-results"] ?? "20"
         let sortMethod = arguments.options["sort"] ?? "moststarred"
         
+        func fail(_ message: String) -> Error {
+            searchingBar.fail()
+            return HazeError.fail(message)
+        }
+        
         var totalResults: Int?
         var maxedResults: Bool?
         var packages: [(name: String?, description: String?)]?
         
-        try client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: [sort: sortMethod, results: maxResults], { (json, error) in
-            guard let json = json else { return }
-            if let data = json["data"] as? JSON {
-                if let hits = data["hits"] as? JSON {
-                    maxedResults = Int(hits["total"] as! String)! > Int(maxResults)!
-                    totalResults = Int(hits["total"] as! String)
-                    if let results = hits["hits"] as? [JSON] {
-                        packages = results.map { (result) -> (name: String?, description: String?) in
-                            if let source = result["_source"] as? JSON {
-                                return (name: source["package_full_name"] as? String, description: source["description"] as? String)
-                            } else { return (name: nil, description: nil) }
-                        }
-                    } else { searchingBar.fail() }
-                } else { searchingBar.fail() }
-            } else { searchingBar.fail() }
-            
-            if error != nil {
-                searchingBar.fail()
-            }
-            searchingBar.finish()
-
-            self.console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)
-            
-            if let maxedResults = maxedResults {
-                if maxedResults {
-                    self.console.output("Not all results are shown.", style: .info, newLine: true)
-                }
-            }
-            if let packages = packages {
-                for package in packages {
-                    self.console.output("\(package.name ?? "N/A"): \(package.description ?? "N/A")", style: .info, newLine: true)
-                }
-            }
+        let (json,error) = try Portal<(JSON?,Error?)>.open({ (portal) in
+            self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: [self.sort: sortMethod, self.results: maxResults], { (json, error) in
+                portal.close(with: (json,error))
+            })
         })
+        
+        guard let data = json?["data"] as? JSON else { throw fail("Bad JSON key") }
+        guard let hits = data["hits"] as? JSON else { throw fail("Bad JSON key") }
+        guard let results = hits["hits"] as? [JSON] else { throw fail("Bad JSON key") }
+        
+        packages = try results.map { (result) -> (name: String?, description: String?) in
+            guard let source = result["_source"] as? JSON else { throw fail("Bad JSON key") }
+            return (name: source["package_full_name"] as? String, description: source["description"] as? String)
+        }
+        
+        maxedResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))! > Int(maxResults)!
+        totalResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))
+        
+        if let error = error {
+            self.console.output("Error: \(error)", style: .error, newLine: true)
+            searchingBar.fail()
+        }
+        searchingBar.finish()
+        
+        self.console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)
+        
+        if let maxedResults = maxedResults {
+            if maxedResults {
+                self.console.output("Not all results are shown.", style: .info, newLine: true)
+            }
+        }
+        if let packages = packages {
+            for package in packages {
+                self.console.output("\(package.name ?? "N/A"): \(package.description ?? "N/A")", style: .info, newLine: true)
+            }
+        }
     }
 }
