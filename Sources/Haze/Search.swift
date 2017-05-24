@@ -109,9 +109,15 @@ public final class Search: Command {
                 self.console.output("Not all results are shown.", style: .info, newLine: true)
             }
         }
+        if (totalResults ?? 0) > 0 {
+            console.output(String(repeating: "-", count: console.size.width), style: .info, newLine: true)
+            console.output("", style: .info, newLine: true)
+        }
         if let packages = packages {
             for package in packages {
-                self.console.output("\(package.name ?? "N/A"): \(package.description ?? "N/A")", style: .info, newLine: true)
+                self.console.output("\(package.name ?? "N/A"):", style: .custom(.green), newLine: false)
+                self.console.output("\(package.description ?? "N/A")", style: .custom(.white), newLine: true)
+                console.output("", style: .info, newLine: true)
             }
         }
     }
