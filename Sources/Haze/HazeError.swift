@@ -20,6 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Console
+
 enum HazeError: Error {
     case fail(String)
+}
+
+func fail(bar: LoadingBar, with message: String) -> Error {
+    bar.fail()
+    return HazeError.fail(message)
 }
