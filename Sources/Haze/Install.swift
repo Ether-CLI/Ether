@@ -19,3 +19,39 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+import Helpers
+import Console
+import Foundation
+import Core
+
+public final class Install: Command {
+    public let id = "install"
+    
+    public let signature: [Argument] = [
+        Value(name: "name", help: [
+            "The name of the package that will be installed"
+        ]),
+        Option(name: "url", help: [
+            "The URL for the package"
+        ]),
+        Option(name: "version", help: [
+            "The desired version for the package",
+            "This defaults to the latest version"
+        ])
+    ]
+    
+    public var help: [String] = [
+        "Installs a package into the current project"
+    ]
+    
+    public let console: ConsoleProtocol
+    
+    public init(console: ConsoleProtocol) {
+        self.console = console
+    }
+    
+    public func run(arguments: [String]) throws {
+    
+    }
+}
