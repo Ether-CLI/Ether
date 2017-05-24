@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import Core
 
 public enum GetJSONError: Error {
     case badURL
@@ -37,13 +38,18 @@ public final class PackageJSONFetcher: APIClient {
         self.session = URLSession(configuration: configuration)
     }
     
-    public func get(from urlString: String, withParameters parameters: [String: String], _ completion: @escaping (JSON?, DataTaskError?)->()) throws {
+    public func get(from urlString: String, withParameters parameters: [String: String], _ completion: @escaping (JSON?, Error?)->()) {
         let parameterString = parameters.map({ return "\($0)=\($1)"}).joined(separator:"&")
         if let url = URL(string: urlString + "?" + parameterString) {
             let request = URLRequest(url: url)
-            self.dataTask(with: request, endingWith: { (json, reponse, error) in
+            do {
+                let (json, error) = try Portal<(JSON?,Error?)>.open({ (portal) in
+                    self.dataTask(with: request, endingWith: { (json, reponse, error) in
+                        portal.close(with: (json, error))
+                    }).resume()
+                })
                 completion(json, error)
-            }).resume()
-        } else { throw GetJSONError.badURL }
+            } catch {}
+        } else { completion(nil, GetJSONError.badURL) }
     }
 }
