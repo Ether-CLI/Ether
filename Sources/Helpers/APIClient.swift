@@ -49,7 +49,7 @@ public protocol APIClient {
 }
 
 extension APIClient {
-    func dataTask(with request: URLRequest, endingWith completion: @escaping FetchCompletion) -> URLSessionDataTask {
+    public func dataTask(with request: URLRequest, endingWith completion: @escaping FetchCompletion) -> URLSessionDataTask {
         let task = session.dataTask(with: request) { (data, response, error) in
             
             guard let resp = response as? HTTPURLResponse else {
