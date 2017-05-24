@@ -36,7 +36,8 @@ guard let executable = iterator.next() else {
 
 do {
     try terminal.run(executable: executable, commands: [
-        Search(console: terminal)
+        Search(console: terminal),
+        Install(console: terminal),
     ], arguments: Array(iterator),
     help: [
         "Need help? Open an issue on GitHub."
