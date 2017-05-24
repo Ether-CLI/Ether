@@ -45,13 +45,11 @@ public final class Search: Command {
         let maxResults = arguments.options["max-results"] ?? "20"
         let sortMethod = arguments.options["sort"] ?? "moststarred"
         
-        var error: DataTaskError?
         var totalResults: Int?
         var maxedResults: Bool?
         var packages: [(name: String?, description: String?)]?
         
-        try client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: [sort: sortMethod, results: maxResults], { (json, networkError) in
-            error = networkError
+        try client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: [sort: sortMethod, results: maxResults], { (json, error) in
             guard let json = json else { return }
             if let data = json["data"] as? JSON {
                 if let hits = data["hits"] as? JSON {
@@ -66,24 +64,24 @@ public final class Search: Command {
                     } else { searchingBar.fail() }
                 } else { searchingBar.fail() }
             } else { searchingBar.fail() }
+            
+            if error != nil {
+                searchingBar.fail()
+            }
+            searchingBar.finish()
+
+            self.console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)
+            
+            if let maxedResults = maxedResults {
+                if maxedResults {
+                    self.console.output("Not all results are shown.", style: .info, newLine: true)
+                }
+            }
+            if let packages = packages {
+                for package in packages {
+                    self.console.output("\(package.name ?? "N/A"): \(package.description ?? "N/A")", style: .info, newLine: true)
+                }
+            }
         })
-        if let error = error {
-            searchingBar.fail()
-            throw error
-        }
-        searchingBar.finish()
-        
-        console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)
-        
-        if let maxedResults = maxedResults {
-            if maxedResults {
-                console.output("Not all results are shown", style: .info, newLine: true)
-            }
-        }
-        if let packages = packages {
-            for package in packages {
-                console.output("\(package.name ?? "N/A"): \(package.description ?? "N/A")", style: .info, newLine: true)
-            }
-        }
     }
 }
