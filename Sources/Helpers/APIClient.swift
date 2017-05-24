@@ -25,10 +25,10 @@ import Foundation
 public let CKNetworkingErrorDomain = "com.caleb-kleveter.Haze.NetworkingError"
 public let MissingHTTPResponseError: Int = 0
 
-typealias JSON = [String: AnyObject]
-typealias FetchCompletion = (JSON?, HTTPURLResponse?, DataTaskError?) -> Void
+public typealias JSON = [String: AnyObject]
+public typealias FetchCompletion = (JSON?, HTTPURLResponse?, DataTaskError?) -> Void
 
-enum DataTaskError: Error {
+public enum DataTaskError: Error {
     case badStatusCode(Int)
     case cannotCastToHTTPURLResponse(NSError)
     case dataTaskError(Error)
@@ -37,11 +37,11 @@ enum DataTaskError: Error {
     case noJson
 }
 
-protocol JSONInitable {
+public protocol JSONInitable {
     init(json: JSON)
 }
 
-protocol APIClient {
+public protocol APIClient {
     var configuration: URLSessionConfiguration { get }
     var session: URLSession { get }
     
