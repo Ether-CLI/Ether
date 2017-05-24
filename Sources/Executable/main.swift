@@ -38,6 +38,7 @@ do {
     try terminal.run(executable: executable, commands: [
         Search(console: terminal),
         Install(console: terminal),
+        Update(console: terminal)
     ], arguments: Array(iterator),
     help: [
         "Need help? Open an issue on GitHub."
