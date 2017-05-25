@@ -45,7 +45,7 @@ do {
         "search: Search avalible packages.",
         "install: Install a package to the current project",
         "update: Update a projects packages",
-        "remove: Remove a package froma project"
+        "remove: Remove a package from a project"
     ])
 } catch ConsoleError.insufficientArguments {
     terminal.error("Error: ", newLine: false)
