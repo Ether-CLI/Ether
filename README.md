@@ -13,13 +13,12 @@ With more to be added soon.
 
 ### How do I install it?
 
-Currently, the only way is to clone down the repo and run the following commands:
+Currently, the only way is to run the following script:
 
 ```bash
-swift build -c release -Xswiftc -static-stdlib
-cd .build/release
-cp -f Executable /usr/local/bin/ether
+curl https://gist.githubusercontent.com/calebkleveter/2e5490c76df227c510035515a49f9f01/raw/49421e072653314160bfe1c506b553805d150cb6/EatherInstall.sh | bash
 ```
+Here is the [Gist that is used](https://gist.github.com/calebkleveter/2e5490c76df227c510035515a49f9f01).
 
 A Homebrew formula is in the works (if you want to help with it, that's fantastic!).
 
