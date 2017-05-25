@@ -21,7 +21,7 @@ cd .build/release
 cp -f Executable /usr/local/bin/ether
 ```
 
-A Homebrew formula is in the works.
+A Homebrew formula is in the works (if you want to help with it, that's fantastic!).
 
 ### How do I make my package available?
 
