@@ -95,6 +95,7 @@ public final class Install: Command {
         let manager = FileManager.default
         if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw HazeError.fail("There is no Package.swift file in the current directory") }
         let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
+        let oldPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON]
         
         guard let packageString = String(data: packageData!, encoding: .utf8) else { throw fail(bar: installingProgressBar, with: "Unable to read Package.swift") }
         let mutableString = NSMutableString(string: packageString)
@@ -110,6 +111,12 @@ public final class Install: Command {
         } catch let error {
             installingProgressBar.fail()
             throw error
+        }
+        if let pins = oldPins {
+            if let newPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON] {
+                let newPackages = newPins.count - pins.count
+                console.output("📦 \(newPackages) packages installed", style: .custom(.white), newLine: true)
+            }
         }
         installingProgressBar.finish()
 
