@@ -79,7 +79,7 @@ public final class Search: Command {
         var packages: [(name: String?, description: String?)]?
         
         let (json,error) = try Portal<(JSON?,Error?)>.open({ (portal) in
-            self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: [self.sort: sortMethod, self.results: maxResults], { (json, error) in
+            self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults], { (json, error) in
                 portal.close(with: (json,error))
             })
         })
