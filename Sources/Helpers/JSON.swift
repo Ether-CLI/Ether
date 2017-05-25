@@ -23,7 +23,7 @@
 import Foundation
 
 public extension Data {
-    func json()throws -> JSON? {
+    public func json()throws -> JSON? {
         return try JSONSerialization.jsonObject(with: self, options: []) as? JSON
     }
 }
