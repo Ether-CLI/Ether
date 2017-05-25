@@ -115,7 +115,7 @@ public final class Search: Command {
         }
         if let packages = packages {
             for package in packages {
-                self.console.output("\(package.name ?? "N/A"):", style: .custom(.green), newLine: false)
+                self.console.output("\(package.name ?? "N/A"): ", style: .custom(.green), newLine: false)
                 self.console.output("\(package.description ?? "N/A")", style: .custom(.white), newLine: true)
                 console.output("", style: .info, newLine: true)
             }
