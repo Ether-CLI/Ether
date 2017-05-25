@@ -18,7 +18,7 @@ Currently, the only way is to clone down the repo and run the following commands
 ```bash
 swift build -c release -Xswiftc -static-stdlib
 cd .build/release
-cp -f ether /usr/local/bin/commandlinetool
+cp -f ether /usr/local/bin/ether
 ```
 
 A Homebrew formula is in the works.
