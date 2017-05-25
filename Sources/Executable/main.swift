@@ -41,12 +41,7 @@ do {
         Update(console: terminal),
         Remove(console: terminal)
     ], arguments: Array(iterator),
-    help: [
-        "search: Search avalible packages.",
-        "install: Install a package to the current project",
-        "update: Update a projects packages",
-        "remove: Remove a package from a project"
-    ])
+    help: [])
 } catch ConsoleError.insufficientArguments {
     terminal.error("Error: ", newLine: false)
     terminal.print("Insufficient arguments.")
