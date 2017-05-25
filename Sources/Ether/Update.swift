@@ -25,7 +25,11 @@ import Console
 public final class Update: Command {
     public let id = "update"
     
-    public let signature: [Argument] = []
+    public let signature: [Argument] = [
+        Option(name: "self", help: [
+            "Updates Ether"
+        ])
+    ]
     
     public let help: [String] = [
         "Updates your dependencies."
@@ -38,10 +42,18 @@ public final class Update: Command {
     }
     
     public func run(arguments: [String]) throws {
-        let updateBar = console.loadingBar(title: "Updating")
-        updateBar.start()
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        updateBar.finish()
+        if let _ = arguments.option("self") {
+            let updateBar = console.loadingBar(title: "Updating Ether")
+            updateBar.start()
+            _ = try console.backgroundExecute(program: "rm", arguments: ["/usr/local/bin/ether"])
+            _ = try console.backgroundExecute(program: "curl", arguments: ["https://gist.githubusercontent.com/calebkleveter/2e5490c76df227c510035515a49f9f01/raw/49421e072653314160bfe1c506b553805d150cb6/EatherInstall.sh", "|", "bash"])
+            updateBar.finish()
+        } else {
+            let updateBar = console.loadingBar(title: "Updating Packages")
+            updateBar.start()
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+            updateBar.finish()
+        }
     }
 
 }
