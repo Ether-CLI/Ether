@@ -1,3 +1,11 @@
+## [1.1.0] - 2017-05-25
+
+### Added
+- Updating Ether
+
+### Fixed
+- ether help
+
 ## [1.0.1] - 2017-05-25
 
 ### Fixed
