@@ -42,7 +42,10 @@ do {
         Remove(console: terminal)
     ], arguments: Array(iterator),
     help: [
-        "Need help? Open an issue on GitHub."
+        "search: Search avalible packages.",
+        "install: Install a package to the current project",
+        "update: Update a projects packages",
+        "remove: Remove a package froma project"
     ])
 } catch ConsoleError.insufficientArguments {
     terminal.error("Error: ", newLine: false)
