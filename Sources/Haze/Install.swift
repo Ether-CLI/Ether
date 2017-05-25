@@ -108,6 +108,7 @@ public final class Install: Command {
         do {
             try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "fetch"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         } catch let error {
             installingProgressBar.fail()
             throw error
