@@ -112,14 +112,13 @@ public final class Install: Command {
             installingProgressBar.fail()
             throw error
         }
+        installingProgressBar.finish()
         if let pins = oldPins {
             if let newPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON] {
                 let newPackages = newPins.count - pins.count
-                console.output("📦 \(newPackages) packages installed", style: .custom(.white), newLine: true)
+                console.output("📦  \(newPackages) packages installed", style: .custom(.white), newLine: true)
             }
         }
-        installingProgressBar.finish()
-
     }
 }
 
