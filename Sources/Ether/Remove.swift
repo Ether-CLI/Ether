@@ -52,7 +52,7 @@ public final class Remove: Command {
         let regex = try NSRegularExpression(pattern: "\\,?\n        \\.Package\\(url:\\s?\\\"([\\d\\-\\.\\@\\w\\/\\:])+\(name)\\.git\\\"\\,\\s?([\\w\\d\\:\\(\\)\\s\\,])+\\)", options: .caseInsensitive)
         let oldPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON]
         
-        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw HazeError.fail("There is no Package.swift file in the current directory") }
+        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw EtherError.fail("There is no Package.swift file in the current directory") }
         let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
         
         guard let packageString = String(data: packageData!, encoding: .utf8) else { throw fail(bar: removingProgressBar, with: "Unable to read Package.swift") }

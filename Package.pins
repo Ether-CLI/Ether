@@ -17,7 +17,7 @@
       "package": "Core",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/core.git",
-      "version": "2.0.1"
+      "version": "2.0.2"
     },
     {
       "package": "Debugging",

@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 import Console
-import Haze
+import Ether
 import libc
 
 var arguments = CommandLine.arguments

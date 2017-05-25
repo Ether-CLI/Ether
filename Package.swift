@@ -3,11 +3,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "Haze",
+    name: "Ether",
     targets: [
         Target(name: "Helpers"),
-        Target(name: "Haze", dependencies: ["Helpers"]),
-        Target(name: "Executable", dependencies: ["Haze"])
+        Target(name: "Ether", dependencies: ["Helpers"]),
+        Target(name: "Executable", dependencies: ["Ether"])
     ],
     dependencies: [
         .Package(url: "https://github.com/vapor/console.git", majorVersion: 2),

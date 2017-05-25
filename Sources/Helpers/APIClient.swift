@@ -23,7 +23,7 @@
 import Foundation
 import Core
 
-public let CKNetworkingErrorDomain = "com.caleb-kleveter.Haze.NetworkingError"
+public let CKNetworkingErrorDomain = "com.caleb-kleveter.Ether.NetworkingError"
 public let MissingHTTPResponseError: Int = 0
 
 public typealias JSON = [String: AnyObject]

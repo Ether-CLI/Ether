@@ -22,11 +22,11 @@
 
 import Console
 
-enum HazeError: Error {
+enum EtherError: Error {
     case fail(String)
 }
 
 func fail(bar: LoadingBar, with message: String) -> Error {
     bar.fail()
-    return HazeError.fail(message)
+    return EtherError.fail(message)
 }

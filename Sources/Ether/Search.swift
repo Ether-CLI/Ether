@@ -71,7 +71,7 @@ public final class Search: Command {
         
         func fail(_ message: String) -> Error {
             searchingBar.fail()
-            return HazeError.fail(message)
+            return EtherError.fail(message)
         }
         
         var totalResults: Int?

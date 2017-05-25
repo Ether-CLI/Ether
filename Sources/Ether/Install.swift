@@ -93,7 +93,7 @@ public final class Install: Command {
         let regex = try NSRegularExpression(pattern: "(\\.Package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\))(?:\\R?)", options: .anchorsMatchLines)
         
         let manager = FileManager.default
-        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw HazeError.fail("There is no Package.swift file in the current directory") }
+        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw EtherError.fail("There is no Package.swift file in the current directory") }
         let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
         let oldPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON]
         
