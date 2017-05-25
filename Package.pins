@@ -11,7 +11,7 @@
       "package": "Console",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/console.git",
-      "version": "2.0.0"
+      "version": "2.1.0"
     },
     {
       "package": "Core",
