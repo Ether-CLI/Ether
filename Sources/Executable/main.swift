@@ -41,7 +41,11 @@ do {
         Update(console: terminal),
         Remove(console: terminal)
     ], arguments: Array(iterator),
-    help: [])
+    help: [
+        "MIT 2017 Caleb Kleveter.",
+        "If you are getting errors, open an issue on GitHub.",
+        "If you want to help, submit a PR."
+    ])
 } catch ConsoleError.insufficientArguments {
     terminal.error("Error: ", newLine: false)
     terminal.print("Insufficient arguments.")
