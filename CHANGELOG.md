@@ -1,3 +1,8 @@
+## [1.2.0] - 2017-05-30
+
+### Added
+- Saving and removing project templates
+
 ## [1.1.0] - 2017-05-25
 
 ### Added
