@@ -23,7 +23,7 @@
 import Foundation
 
 @discardableResult
-func shell(command: String, _ args: String...) -> Int32 {
+public func shell(command: String, _ args: String...) -> Int32 {
     let task = Process()
     task.launchPath = command
     task.arguments = args
