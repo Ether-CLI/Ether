@@ -21,3 +21,69 @@
 // SOFTWARE.
 
 // Path: ~/Library/Application\ Support/Ether
+
+import Console
+import Foundation
+import Core
+import Helpers
+
+final public class Template: Command {
+    public let id = "template"
+    
+    public let signature: [Argument] = [
+        Value(name: "template-name", help: [
+            "The name used to identify the template"
+        ]),
+        Option(name: "github", help: [
+            "Creates a GitHub repo and pushes the template to it."
+        ]),
+        Option(name: "remove", help: [
+            "Deletes the template"
+        ])
+    ]
+    
+    public let help: [String] = [
+        "Creates and stores a template for use as the starting point of a project."
+    ]
+    
+    public let console: ConsoleProtocol
+    
+    public init(console: ConsoleProtocol) {
+        self.console = console
+    }
+    
+    public func run(arguments: [String]) throws {
+        let name = try value("template-name", from: arguments)
+        let useGitHub = arguments.option("github") != nil ? true : false
+        let removeTemplate = arguments.option("remove") != nil ? true : false
+        let manager = FileManager.default
+        let loadingBarTitle = removeTemplate ? "Deleting Template" : "Saving Template"
+        
+        let savingBar = console.loadingBar(title: loadingBarTitle)
+        savingBar.start()
+        
+        if #available(OSX 10.12, *) {
+            var isDir : ObjCBool = true
+            let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
+            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".characters.dropFirst(7))
+            let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
+            
+            if removeTemplate {
+                if !directoryExists { throw fail(bar: savingBar, with: "No template with that name exists") }
+                shell(command: "/bin/rm", "-rf", "\(defaultPath)/\(name)")
+            } else {
+                if directoryExists { throw fail(bar: savingBar, with: "A template with that name already exists") }
+                let current = manager.currentDirectoryPath + "/."
+                shell(command: "/bin/cp", "-a", "\(current)", "\(defaultPath)/\(name)")
+            }
+        } else {
+            throw fail(bar: savingBar, with: "This command is not supported in macOS versions older then 10.12å")
+        }
+        savingBar.finish()
+        
+        if useGitHub {
+            console.output("The GitHub flag is currently not implimented", style: .warning, newLine: true)
+        }
+        
+    }
+}
