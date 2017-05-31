@@ -77,7 +77,7 @@ final public class Template: Command {
                 shell(command: "/bin/cp", "-a", "\(current)", "\(defaultPath)/\(name)")
             }
         } else {
-            throw fail(bar: savingBar, with: "This command is not supported in macOS versions older then 10.12å")
+            throw fail(bar: savingBar, with: "This command is not supported in macOS versions older then 10.12")
         }
         savingBar.finish()
         
