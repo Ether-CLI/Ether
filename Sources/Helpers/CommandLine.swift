@@ -22,6 +22,7 @@
 
 import Foundation
 
+// ATTRIBUTION: - @rintaro | https://stackoverflow.com/questions/26971240/how-do-i-run-an-terminal-command-in-a-swift-script-e-g-xcodebuild
 @discardableResult
 public func shell(command: String, _ args: String...) -> Int32 {
     let task = Process()
