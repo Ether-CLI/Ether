@@ -1,3 +1,9 @@
+## [1.2.1] - 2017-05-31
+
+### Fixed
+- Attribution for `shell()`
+- Fail error typo for the template command.
+
 ## [1.2.0] - 2017-05-30
 
 ### Added
