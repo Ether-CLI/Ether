@@ -40,7 +40,8 @@ do {
         Install(console: terminal),
         Update(console: terminal),
         Remove(console: terminal),
-        Template(console: terminal)
+        Template(console: terminal),
+        New(console: terminal)
     ], arguments: Array(iterator),
     help: [
         "MIT 2017 Caleb Kleveter.",
