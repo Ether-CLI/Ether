@@ -1,3 +1,8 @@
+## [1.3.0] - 2017-05-31
+
+### Added
+- ether new for creating new projects.
+
 ## [1.2.1] - 2017-05-31
 
 ### Fixed
