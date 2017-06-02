@@ -1,3 +1,8 @@
+## [1.4.2] - 2017-06-2
+
+### Fixed
+- Packages are updated after their version is updated.
+
 ## [1.4.1] - 2017-06-2
 
 ### Changed
