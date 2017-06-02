@@ -1,3 +1,10 @@
+## [1.4.1] - 2017-06-2
+
+### Changed
+- Network requests now use synchronous `get(url parameter)`
+- `version latest` only rewrites `Package.swift` once.
+
+
 ## [1.4.0] - 2017-06-2
 
 ### Added
