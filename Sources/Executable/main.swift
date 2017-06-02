@@ -41,7 +41,10 @@ do {
         Update(console: terminal),
         Remove(console: terminal),
         Template(console: terminal),
-        New(console: terminal)
+        New(console: terminal),
+        Group(id: "version", commands: [
+            VersionLatest(console: terminal)
+        ], help: ["For interacting with dependency versions"])
     ], arguments: Array(iterator),
     help: [
         "MIT 2017 Caleb Kleveter.",
