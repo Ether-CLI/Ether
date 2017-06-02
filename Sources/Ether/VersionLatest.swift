@@ -82,6 +82,9 @@ public final class VersionLatest: Command {
         }
         try (mutableString as String).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
         
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "fetch"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        
         updateBar.finish()
     }
 }
