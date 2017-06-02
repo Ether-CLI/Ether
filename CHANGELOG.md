@@ -1,7 +1,12 @@
+## [1.4.0] - 2017-06-2
+
+### Added
+- `ether version latest` for updating all packages to their latest version.
+
 ## [1.3.0] - 2017-05-31
 
 ### Added
-- ether new for creating new projects.
+- `ether new` for creating new projects.
 
 ## [1.2.1] - 2017-05-31
 
@@ -20,12 +25,12 @@
 - Updating Ether
 
 ### Fixed
-- ether help
+- `ether help`
 
 ## [1.0.1] - 2017-05-25
 
 ### Fixed
-- ether help
+- `ether help`
 
 ## [1.0.0] - 2017-05-25
 
