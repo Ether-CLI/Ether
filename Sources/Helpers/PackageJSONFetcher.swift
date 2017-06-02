@@ -52,4 +52,11 @@ public final class PackageJSONFetcher: APIClient {
             } catch {}
         } else { completion(nil, GetJSONError.badURL) }
     }
+    
+    public func get(from url: String, withParameters parameters: [String: String])throws -> (JSON?, Error?) {
+        let requestResult = try Portal<(JSON?,Error?)>.open({ (portal) in
+            self.get(from: url, withParameters: parameters, { (json, error) in portal.close(with: (json,error)) })
+        })
+        return requestResult
+    }
 }
