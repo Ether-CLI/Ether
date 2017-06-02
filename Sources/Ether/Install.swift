@@ -64,19 +64,17 @@ public final class Install: Command {
             if let version = arguments.options["version"] { v = version }
             if let url = arguments.options["url"] { u = url } else {
                 if name.contains("/") {
-                    let (json,error) = try Portal<(JSON?,Error?)>.open({ (portal) in
-                        self.client.get(from: self.baseURL + name, withParameters: [:], { (json, error) in portal.close(with: (json,error)) })
-                    })
+                    let (json,error) = try self.client.get(from: self.baseURL + name, withParameters: [:])
                     if let error = error { throw fail(bar: installingProgressBar, with: String(describing: error)) }
+                    
                     if let json = json {
                         u = String(describing: json["ghUrl"]!) + ".git"
                         v = String(describing: json["version"]!)
                     } else { throw fail(bar: installingProgressBar, with: "No JSON found") }
                 } else {
-                    let (json,error) = try Portal<(JSON?,Error?)>.open({ (portal) in
-                        self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"], { (json, error) in portal.close(with: (json,error)) })
-                    })
+                    let (json,error) = try self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"])
                     if let error = error { throw fail(bar: installingProgressBar, with: String(describing: error)) }
+                    
                     guard let data = json?["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
                     guard let hits = data["hits"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
                     guard let results = hits["hits"] as? [JSON] else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }

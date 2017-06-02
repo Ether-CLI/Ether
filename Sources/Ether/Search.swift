@@ -78,11 +78,7 @@ public final class Search: Command {
         var maxedResults: Bool?
         var packages: [(name: String?, description: String?)]?
         
-        let (json,error) = try Portal<(JSON?,Error?)>.open({ (portal) in
-            self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults], { (json, error) in
-                portal.close(with: (json,error))
-            })
-        })
+        let (json,error) = try self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults])
         
         guard let data = json?["data"] as? JSON else { throw fail("Bad JSON key") }
         guard let hits = data["hits"] as? JSON else { throw fail("Bad JSON key") }
