@@ -79,9 +79,8 @@ public final class VersionLatest: Command {
             
             if replaceRegex.matches(in: mutableString as String, options: [], range: NSMakeRange(0, mutableString.length)).count == 0 { throw fail(bar: updateBar, with: "Error in Regex pattern") }
             replaceRegex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1\(formattedVersion)$3")
-            
-            try (mutableString as String).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
         }
+        try (mutableString as String).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
         
         updateBar.finish()
     }
