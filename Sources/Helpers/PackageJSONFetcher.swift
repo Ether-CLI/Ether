@@ -38,6 +38,12 @@ public final class PackageJSONFetcher: APIClient {
         self.session = URLSession(configuration: configuration)
     }
     
+    /// Gets the data from a URL in semi-asynchronusly.
+    ///
+    /// - Parameters:
+    ///   - urlString: The URL the data will be fetched from.
+    ///   - parameters: The URL's parameters.
+    ///   - completion: The completion handler where either the JSON or Error can be accessed.
     public func get(from urlString: String, withParameters parameters: [String: String], _ completion: @escaping (JSON?, Error?)->()) {
         let parameterString = parameters.map({ return "\($0)=\($1)"}).joined(separator:"&")
         if let url = URL(string: urlString + "?" + parameterString) {
@@ -53,6 +59,13 @@ public final class PackageJSONFetcher: APIClient {
         } else { completion(nil, GetJSONError.badURL) }
     }
     
+    /// Synchronously fetches data from a URL
+    ///
+    /// - Parameters:
+    ///   - url: The URL the data will be fetched from.
+    ///   - parameters: The paramters for the URL.
+    /// - Returns: The JSON or Error that was returned from the network request.
+    /// - Throws: Any errors that occur in the Portal for synchronously running the network request.
     public func get(from url: String, withParameters parameters: [String: String])throws -> (JSON?, Error?) {
         let requestResult = try Portal<(JSON?,Error?)>.open({ (portal) in
             self.get(from: url, withParameters: parameters, { (json, error) in portal.close(with: (json,error)) })
