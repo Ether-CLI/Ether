@@ -78,9 +78,9 @@ public final class Search: Command {
         var maxedResults: Bool?
         var packages: [(name: String?, description: String?)]?
         
-        let (json,error) = try self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults])
+        let json = try self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults])
         
-        guard let data = json?["data"] as? JSON else { throw fail("Bad JSON key") }
+        guard let data = json["data"] as? JSON else { throw fail("Bad JSON key") }
         guard let hits = data["hits"] as? JSON else { throw fail("Bad JSON key") }
         guard let results = hits["hits"] as? [JSON] else { throw fail("Bad JSON key") }
         
@@ -91,11 +91,7 @@ public final class Search: Command {
         
         maxedResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))! > Int(maxResults)!
         totalResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))
-        
-        if let error = error {
-            self.console.output("Error: \(error)", style: .error, newLine: true)
-            searchingBar.fail()
-        }
+
         searchingBar.finish()
         
         self.console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)

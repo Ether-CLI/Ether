@@ -64,18 +64,14 @@ public final class Install: Command {
             if let version = arguments.options["version"] { v = version }
             if let url = arguments.options["url"] { u = url } else {
                 if name.contains("/") {
-                    let (json,error) = try self.client.get(from: self.baseURL + name, withParameters: [:])
-                    if let error = error { throw fail(bar: installingProgressBar, with: String(describing: error)) }
+                    let json = try self.client.get(from: self.baseURL + name, withParameters: [:])
                     
-                    if let json = json {
-                        u = String(describing: json["ghUrl"]!) + ".git"
-                        v = String(describing: json["version"]!)
-                    } else { throw fail(bar: installingProgressBar, with: "No JSON found") }
+                    u = String(describing: json["ghUrl"]!) + ".git"
+                    v = String(describing: json["version"]!)
                 } else {
-                    let (json,error) = try self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"])
-                    if let error = error { throw fail(bar: installingProgressBar, with: String(describing: error)) }
+                    let json = try self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"])
                     
-                    guard let data = json?["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
+                    guard let data = json["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
                     guard let hits = data["hits"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
                     guard let results = hits["hits"] as? [JSON] else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
                     guard let source = results[0]["_source"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }

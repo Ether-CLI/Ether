@@ -25,6 +25,7 @@ import Core
 
 public enum GetJSONError: Error {
     case badURL
+    case noJSON
 }
 
 public final class PackageJSONFetcher: APIClient {
@@ -64,12 +65,14 @@ public final class PackageJSONFetcher: APIClient {
     /// - Parameters:
     ///   - url: The URL the data will be fetched from.
     ///   - parameters: The paramters for the URL.
-    /// - Returns: The JSON or Error that was returned from the network request.
-    /// - Throws: Any errors that occur in the Portal for synchronously running the network request.
-    public func get(from url: String, withParameters parameters: [String: String])throws -> (JSON?, Error?) {
+    /// - Returns: The JSON is returned from the network request.
+    /// - Throws: Any errors that occur in the Portal or in the network request.
+    public func get(from url: String, withParameters parameters: [String: String])throws -> JSON {
         let requestResult = try Portal<(JSON?,Error?)>.open({ (portal) in
             self.get(from: url, withParameters: parameters, { (json, error) in portal.close(with: (json,error)) })
         })
-        return requestResult
+        if let error = requestResult.1 { throw error }
+        if requestResult.0 == nil { throw GetJSONError.noJSON }
+        return requestResult.0!
     }
 }

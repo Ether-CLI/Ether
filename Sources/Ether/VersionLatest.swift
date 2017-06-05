@@ -70,10 +70,9 @@ public final class VersionLatest: Command {
             let regexPackageName = packageName.replacingOccurrences(of: "/", with: "\\/")
             let replaceRegex = try NSRegularExpression(pattern: "(        \\.Package\\(url\\:\\s?\\\"https\\:\\/\\/github\\.com\(regexPackageName)\\.git\\\"\\,\\s?)([\\d\\w\\(\\)\\:\\s\\,]+)(\\))", options: .anchorsMatchLines)
             
-            let (json,error) = try self.client.get(from: self.baseURL + packageName, withParameters: [:])
+            let json = try self.client.get(from: self.baseURL + packageName, withParameters: [:])
             
-            if let error = error { throw fail(bar: updateBar, with: "An error occured during JSON request: \(error). URL: \(self.baseURL + packageName)") }
-            guard let version = json?["version"] as? String else { throw fail(bar: updateBar, with: "Bad JSON key for \(packageName) version") }
+            guard let version = json["version"] as? String else { throw fail(bar: updateBar, with: "Bad JSON key for \(packageName) version") }
             let versionNumbers = version.characters.split(separator: ".").map(String.init)
             let formattedVersion = "Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2]))"
             
