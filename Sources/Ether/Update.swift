@@ -24,23 +24,23 @@ import Console
 
 public final class Update: Command {
     public let id = "update"
-    
+
     public let signature: [Argument] = [
         Option(name: "self", help: [
             "Updates Ether"
         ])
     ]
-    
+
     public let help: [String] = [
         "Updates your dependencies."
     ]
-    
+
     public let console: ConsoleProtocol
-    
+
     public init(console: ConsoleProtocol) {
         self.console = console
     }
-    
+
     public func run(arguments: [String]) throws {
         if let _ = arguments.option("self") {
             let updateBar = console.loadingBar(title: "Updating Ether")
@@ -53,6 +53,45 @@ public final class Update: Command {
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
             updateBar.finish()
         }
+    }
+
+    private func printEtherArt() {
+      let etherArt = [
+        "    /=====",
+        " __/ /__",
+        "/~•~•~~~\\",
+        "|•~~~•~~|",
+        "|~~•~~~•|",
+        "\\~~~~~•~/"
+      ]
+
+      let characterColors: [Character: ConsoleColor] = [
+        "/": .cyan,
+        "=": .cyan,
+        "_": .cyan,
+        "\\", .cyan,
+        "~": .green,
+        "•": .green
+      ]
+
+      for line in console.center(etherArt) {
+            for character in line.characters {
+                let style: ConsoleStyle
+
+                if let color = characterColors[character] {
+                    style = .custom(color)
+                } else {
+                    style = .plain
+                }
+
+                console.output("\(character)", style: style, newLine: false)
+            }
+            console.print()
+        }
+
+        console.print()
+
+        console.output(console.center("Thanks for Updating Ether!"), style: .plain, newLine: true)
     }
 
 }
