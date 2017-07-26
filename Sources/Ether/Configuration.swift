@@ -30,3 +30,23 @@
 //    }
 //  }
 // }
+
+import Console
+
+public final class Configuration: Command {
+    public let id = "config"
+
+    public let signature: [Argument] = []
+
+    public var help: [String] = []
+
+    public let console: ConsoleProtocol
+
+    public init(console: ConsoleProtocol) {
+        self.console = console
+    }
+
+    public func run(arguments: [String]) throws {
+
+    }
+}
