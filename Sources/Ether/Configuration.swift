@@ -36,7 +36,11 @@ import Console
 public final class Configuration: Command {
     public let id = "config"
 
-    public let signature: [Argument] = []
+    public let signature: [Argument] = [
+      Value(name: "setting", help: [
+          "The configuration key and value for it to be updated to with the format of key:value"
+      ])
+    ]
 
     public var help: [String] = []
 
