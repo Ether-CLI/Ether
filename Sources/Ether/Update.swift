@@ -47,6 +47,7 @@ public final class Update: Command {
             updateBar.start()
             _ = try console.backgroundExecute(program: "/bin/sh", arguments: ["-c", "curl https://gist.githubusercontent.com/calebkleveter/2e5490c76df227c510035515a49f9f01/raw/49421e072653314160bfe1c506b553805d150cb6/EatherInstall.sh | bash"])
             updateBar.finish()
+            self.printEtherArt()
         } else {
             let updateBar = console.loadingBar(title: "Updating Packages")
             updateBar.start()
