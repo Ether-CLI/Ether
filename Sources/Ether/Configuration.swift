@@ -32,6 +32,7 @@
 // }
 
 import Console
+import Foundation
 
 public final class Configuration: Command {
     public let id = "config"
