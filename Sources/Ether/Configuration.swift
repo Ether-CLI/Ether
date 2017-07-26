@@ -35,6 +35,7 @@ import Console
 
 public final class Configuration: Command {
     public let id = "config"
+    public let configUrl = "~/Library/Application\\ Support/Ether/config.json"
 
     public let signature: [Argument] = [
       Value(name: "setting", help: [
