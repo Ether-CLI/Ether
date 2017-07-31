@@ -23,7 +23,7 @@
 import Console
 
 public final class Version: Command {
-    public let id = "update"
+    public let id = "version"
     
     public let signature: [Argument] = []
     
