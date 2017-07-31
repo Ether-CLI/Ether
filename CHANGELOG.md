@@ -1,3 +1,18 @@
+## [1.5.2] - 2017-07-30
+
+### Fixed
+- `ether --version` flag; again.
+
+## [1.5.1] - 2017-07-30
+
+### Fixed
+- `ether --version` flag.
+
+## [1.5.0] - 2017-07-30
+
+### Added
+- `ether --version` and `ether -v` for viewing the version of Ether you are using.
+
 ## [1.4.2] - 2017-06-2
 
 ### Fixed
