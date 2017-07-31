@@ -70,7 +70,8 @@ public final class Update: Command {
         "/": .cyan,
         "=": .cyan,
         "_": .cyan,
-        "\\", .cyan,
+        "|": .cyan,
+        "\\": .cyan,
         "~": .green,
         "•": .green
       ]
@@ -91,7 +92,6 @@ public final class Update: Command {
         }
 
         console.print()
-
         console.output(console.center("Thanks for Updating Ether!"), style: .plain, newLine: true)
     }
 

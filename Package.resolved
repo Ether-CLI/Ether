@@ -1,0 +1,61 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Bits",
+        "repositoryURL": "https://github.com/vapor/bits.git",
+        "state": {
+          "branch": null,
+          "revision": "389f1344cd5819e94c54ee18b35c2bc5589c7f05",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Console",
+        "repositoryURL": "https://github.com/vapor/console.git",
+        "state": {
+          "branch": null,
+          "revision": "4badfa71e270ce1bde5b30349964ed24659f0744",
+          "version": "2.1.0"
+        }
+      },
+      {
+        "package": "Core",
+        "repositoryURL": "https://github.com/vapor/core.git",
+        "state": {
+          "branch": null,
+          "revision": "03af35140315ad2d5cbf6c197bcf4a64b9c5e24d",
+          "version": "2.0.2"
+        }
+      },
+      {
+        "package": "Debugging",
+        "repositoryURL": "https://github.com/vapor/debugging.git",
+        "state": {
+          "branch": null,
+          "revision": "bbd261de01c47f2e4d9acf4097807349330194ea",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "JSON",
+        "repositoryURL": "https://github.com/vapor/json.git",
+        "state": {
+          "branch": null,
+          "revision": "78ed34f9f706af390b8c8f50f00191bafe5ce76f",
+          "version": "2.0.2"
+        }
+      },
+      {
+        "package": "Node",
+        "repositoryURL": "https://github.com/vapor/node.git",
+        "state": {
+          "branch": null,
+          "revision": "2d34e0034d8794ca378fddf7d30b7a227dd8d49e",
+          "version": "2.0.4"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
