@@ -27,12 +27,13 @@ import libc
 // The current version of Ether. This string should be updated with each release.
 let version = "1.5.1"
 var arguments = CommandLine.arguments
+let terminal = Terminal(arguments: arguments)
 
-if arguments.contains("--version") {
-    arguments.insert("version", at: 1)
+if arguments.contains("--version") || arguments.contains("-v") {
+    terminal.output("Ether Version: \(version)", style: .info, newLine: true)
+    exit(0)
 }
 
-let terminal = Terminal(arguments: arguments)
 var iterator = arguments.makeIterator()
 
 guard let executable = iterator.next() else {
@@ -50,7 +51,6 @@ do {
         Group(id: "version", commands: [
             VersionLatest(console: terminal)
         ], help: ["For interacting with dependency versions"]),
-        Version(console: terminal, version: version)
     ], arguments: Array(iterator),
     help: [
         "MIT 2017 Caleb Kleveter.",
