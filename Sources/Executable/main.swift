@@ -25,7 +25,7 @@ import Ether
 import libc
 
 // The current version of Ether. This string should be updated with each release.
-let version = "1.5"
+let version = "1.5.1"
 var arguments = CommandLine.arguments
 
 if arguments.contains("--version") {
