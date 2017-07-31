@@ -1,3 +1,5 @@
+![[Ether Logo](https://raw.githubusercontent.com/calebkleveter/Ether/master/logo.png)](https://raw.githubusercontent.com/calebkleveter/Ether/master/logo.png)
+
 # Ether
 
 ### What is it?
