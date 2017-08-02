@@ -49,7 +49,8 @@ do {
         Template(console: terminal),
         New(console: terminal),
         Group(id: "version", commands: [
-            VersionLatest(console: terminal)
+            VersionLatest(console: terminal),
+            VersionAll(console: terminal)
         ], help: ["For interacting with dependency versions"]),
     ], arguments: Array(iterator),
     help: [
