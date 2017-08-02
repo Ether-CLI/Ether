@@ -1,3 +1,8 @@
+## [1.6.0] - 2017-08-2
+
+### Added
+- `ether version all` for viewing installed package versions.
+
 ## [1.5.2] - 2017-07-30
 
 ### Fixed
