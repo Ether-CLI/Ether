@@ -25,7 +25,9 @@ import Console
 public final class VersionAll: Command {
     public let id = "all"
     
-    public var help: [String] = []
+    public var help: [String] = [
+        "Outputs the name of each package installed and its version"
+    ]
     
     public var signature: [Argument] = []
     
