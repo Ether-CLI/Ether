@@ -21,6 +21,8 @@
 // SOFTWARE.
 
 import Console
+import Foundation
+import Helpers
 
 public final class VersionAll: Command {
     public let id = "all"
@@ -38,6 +40,36 @@ public final class VersionAll: Command {
     }
     
     public func run(arguments: [String]) throws {
+        let fetchingDataBar = console.loadingBar(title: "Getting Package Data")
+        fetchingDataBar.start()
         
+        let manager = FileManager.default
+        if let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins") {
+            if let packageJson = try packageData.json()?["pins"] as? [[String: AnyObject]] {
+                for package in packageJson {
+                    console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
+                    console.output("v\(package["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
+                }
+            } else {
+                throw fail(bar: fetchingDataBar, with: "Unable to parse data from Package.pins.")
+            }
+        } else if let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.resolved") {
+            if let packageJson = try packageData.json()?["object"] as? [String: AnyObject] {
+                if let pins = packageJson["pins"] as? [[String: AnyObject]] {
+                    for package in pins {
+                        console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
+                        if let state = package["state"] as? [String: AnyObject] {
+                            console.output("v\(state["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
+                        }
+                    }
+                }
+            } else {
+                throw fail(bar: fetchingDataBar, with: "Unable to parse data from Package.resolved.")
+            }
+        } else {
+            throw fail(bar: fetchingDataBar, with: "Make sure you are in the root of an SPM project.")
+        }
+        
+        fetchingDataBar.finish()
     }
 }
