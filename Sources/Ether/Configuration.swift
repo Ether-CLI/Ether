@@ -41,6 +41,24 @@ public final class Configuration: Command {
         case updateCommit(String)
         case newCommit(String)
         case useGit(Bool)
+        
+        func parseFrom(_ str: String) -> Keys {
+            let key = str.components(separatedBy: ":")[0]
+            let value = str.components(separatedBy: ":")[1]
+            switch key {
+            case "install-commit": return .installCommit(value)
+            case "remove-commit": return .removeCommit(value)
+            case "update-commit": return .updateCommit(value)
+            case "new-commit": return .newCommit(value)
+            case "use-git":
+                if value == "false" {
+                    return .useGit(false)
+                } else {
+                    return .useGit(true)
+                }
+            default: fatalError("The key passed in does not exist.ç")
+            }
+        }
     }
     
     public let id = "config"
