@@ -44,7 +44,18 @@ public final class Configuration: Command {
       ])
     ]
 
-    public var help: [String] = []
+    public var help: [String] = [
+        "Sets Ether configuration data to customize functionality.",
+        "Here is a list of keys, the expected value type, and what it does:",
+        "",
+        "      Key       | Value  |                        Description                               ",
+        "----------------+--------+------------------------------------------------------------------",
+        " install-commit | String | The commit message used when a package has been installed        ",
+        " remove-commit  | String | The commit message used when a package has been removed          ",
+        " update-commit  | String | The commit message when the update command is run                ",
+        " new-commit     | String | The commit message used when a project is generated              ",
+        " use-git        | Bool   | Whether or not to use Git when a command that would use it is run"
+    ]
 
     public let console: ConsoleProtocol
 
