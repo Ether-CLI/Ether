@@ -35,6 +35,14 @@ import Console
 import Foundation
 
 public final class Configuration: Command {
+    public enum Keys {
+        case installCommit(String)
+        case removeCommit(String)
+        case updateCommit(String)
+        case newCommit(String)
+        case useGit(Bool)
+    }
+    
     public let id = "config"
     public let configUrl = "~/Library/Application\\ Support/Ether/config.json"
 
