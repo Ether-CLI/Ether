@@ -51,12 +51,12 @@ public final class Configuration: Command {
             case "update-commit": return .updateCommit(value)
             case "new-commit": return .newCommit(value)
             case "use-git":
-                if value == "false" {
+                if value == "false" || value == "no" || value == "n" {
                     return .useGit(false)
                 } else {
                     return .useGit(true)
                 }
-            default: fatalError("The key passed in does not exist.ç")
+            default: fatalError("The key passed in does not exist.")
             }
         }
     }
@@ -90,6 +90,18 @@ public final class Configuration: Command {
     }
 
     public func run(arguments: [String]) throws {
-
+        let progressBar = console.loadingBar(title: "Setting value for key")
+        progressBar.start()
+        
+        let fileManager = FileManager.default
+        guard let fileData = fileManager.contents(atPath: configUrl) else {
+            throw fail(bar: progressBar, with: "The configuration file does not exit. Try running `ether update --self`")
+        }
+        
+        guard let configData = String(data: fileData, encoding: .utf8) else {
+            throw fail(bar: progressBar, with: "Unable to read data from configuration file")
+        }
+        
+        
     }
 }
