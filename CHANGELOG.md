@@ -1,3 +1,8 @@
+## [1.6.1] - 2017-09-15
+
+### Fixed
+- Fixed bug that caused the install to fail if the dependencies array is non-existent or empty.
+
 ## [1.6.0] - 2017-08-2
 
 ### Added
