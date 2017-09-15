@@ -10,8 +10,8 @@ let package = Package(
         Target(name: "Executable", dependencies: ["Ether"])
     ],
     dependencies: [
-        .Package(url: "https://github.com/vapor/console.git", Version(2,1,0)),
-        .Package(url: "https://github.com/vapor/json.git", Version(2,1,0)),
-        .Package(url: "https://github.com/vapor/core.git", Version(2,1,1))
+        .Package(url: "https://github.com/vapor/console.git", Version(2,2,0)),
+        .Package(url: "https://github.com/vapor/json.git", Version(2,2,0)),
+        .Package(url: "https://github.com/vapor/core.git", Version(2,1,2))
     ]
 )
