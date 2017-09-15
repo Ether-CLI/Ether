@@ -75,10 +75,10 @@ public final class Install: Command {
                 } else {
                     let json = try self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"])
                     
-                    guard let data = json["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
-                    guard let hits = data["hits"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
-                    guard let results = hits["hits"] as? [JSON] else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
-                    guard let source = results[0]["_source"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key") }
+                    guard let data = json["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: data") }
+                    guard let hits = data["hits"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: hits (1)") }
+                    guard let results = hits["hits"] as? [JSON] else { throw fail(bar: installingProgressBar, with: "Bad JSON key: hits (2)") }
+                    guard let source = results[0]["_source"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: _source") }
                     
                     u = String(describing: source["git_clone_url"]!)
                     if v == "" { v = String(describing: source["latest_version"]!) }
