@@ -115,7 +115,7 @@ public final class Install: Command {
         if try NSRegularExpression(pattern: "(\\][\\n\\s]*,[\\n\\s]*|Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"[\\n\\s]*,[\\n\\s]*)dependencies:[\\n\\s]*\\[(.|\\n)*\\]", options: []).matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count < 1 {
             
             // Create the dependencies array
-            try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"[^,]|targets\\s*:\\s*\\[(\\n|.)*\\])", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1,\n    dependencies: [\n        \n    ]")
+            try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\])", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1,\n    dependencies: [\n        \n    ]")
         }
         
         // Check to see if there are packages in the dependencies array
