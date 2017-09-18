@@ -1,3 +1,8 @@
+## [1.6.2] - 2017-09-18
+
+### Fixed
+- The position of the dependencies array when a targets array exists.
+
 ## [1.6.1] - 2017-09-15
 
 ### Fixed
