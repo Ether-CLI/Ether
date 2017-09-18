@@ -114,8 +114,17 @@ public final class Install: Command {
         // Check to make sure that the dependencies array exists
         if try NSRegularExpression(pattern: "(\\][\\n\\s]*,[\\n\\s]*|Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"[\\n\\s]*,[\\n\\s]*)dependencies:[\\n\\s]*\\[(.|\\n)*\\]", options: []).matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count < 1 {
             
+            // Create a RegEx to find where the start of the dependencies array should start
+            let dependenciesArrayStartPattern = try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\])", options: [])
+            
+            // Get the number of matches in the package manifest file for the dependenciesArrayStartPattern
+            let numberOfMatches = dependenciesArrayStartPattern.numberOfMatches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count))
+            
+            // Get the range of the match that should be replaced.
+            let rangeOfMatch = dependenciesArrayStartPattern.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count))[numberOfMatches - 1].range
+            
             // Create the dependencies array
-            try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\])", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1,\n    dependencies: [\n        \n    ]")
+            dependenciesArrayStartPattern.replaceMatches(in: mutableString, options: [], range: rangeOfMatch, withTemplate: "$1,\n    dependencies: [\n    ]")
         }
         
         // Check to see if there are packages in the dependencies array
@@ -126,7 +135,7 @@ public final class Install: Command {
         } else {
             
             // Add the new package to the dependencies array
-            try NSRegularExpression(pattern: "\\],[\\s\\n]*dependencies:\\s*\\[", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1,\n        .Package(url: \"\(url)\", Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2])))\n")
+            try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\]),[\\s\\n]*dependencies:\\s*\\[", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$0\n        .Package(url: \"\(url)\", Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2])))")
         }
         
         do {
