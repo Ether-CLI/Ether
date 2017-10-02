@@ -15,7 +15,7 @@ You can see a whole list of the available commands [here](https://github.com/cal
 Currently, the only way is to run the following script:
 
 ```bash
-curl https://gist.githubusercontent.com/calebkleveter/2e5490c76df227c510035515a49f9f01/raw/49421e072653314160bfe1c506b553805d150cb6/EatherInstall.sh | bash
+curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash
 ```
 Here is the [Gist that is used](https://gist.github.com/calebkleveter/2e5490c76df227c510035515a49f9f01).
 
