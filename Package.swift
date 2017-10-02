@@ -1,17 +1,17 @@
-// swift-tools-version:3.1
+// swift-tools-version:4.0
 
 import PackageDescription
 
-let package = Package(
+Package(
     name: "Ether",
     targets: [
-        Target(name: "Helpers"),
-        Target(name: "Ether", dependencies: ["Helpers"]),
-        Target(name: "Executable", dependencies: ["Ether"])
+        .target(name: "Helpers"),
+        .target(name: "Ether", dependencies: ["Helpers"]),
+        .target(name: "Executable", dependencies: ["Ether"])
     ],
     dependencies: [
-        .Package(url: "https://github.com/vapor/console.git", Version(2,2,0)),
-        .Package(url: "https://github.com/vapor/json.git", Version(2,2,0)),
-        .Package(url: "https://github.com/vapor/core.git", Version(2,1,2))
+        .package(url: "https://github.com/vapor/console.git", from: "2.2.0"),
+        .package(url: "https://github.com/vapor/json.git", from: "2.2.0"),
+        .package(url: "https://github.com/vapor/core.git", from: "2.1.2")
     ]
 )
