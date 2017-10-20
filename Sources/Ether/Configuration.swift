@@ -98,7 +98,7 @@ public final class Configuration: Command {
             throw fail(bar: progressBar, with: "The configuration file does not exit. Try running `ether update --self`")
         }
         
-        guard let configData = String(data: fileData, encoding: .utf8) else {
+        guard let _ = String(data: fileData, encoding: .utf8) else {
             throw fail(bar: progressBar, with: "Unable to read data from configuration file")
         }
         
