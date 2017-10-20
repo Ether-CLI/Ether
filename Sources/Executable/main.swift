@@ -48,7 +48,6 @@ do {
         Remove(console: terminal),
         Template(console: terminal),
         New(console: terminal),
-        Configuration(console: terminal),
         Group(id: "version", commands: [
             VersionLatest(console: terminal),
             VersionAll(console: terminal)
