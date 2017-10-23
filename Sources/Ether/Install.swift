@@ -54,114 +54,153 @@ public final class Install: Command {
     }
     
     public func run(arguments: [String]) throws {
-        // Create and start the progress bar
-        let installingProgressBar = console.loadingBar(title: "Installing Dependancy")
-        installingProgressBar.start()
+        console.output("Reading Package Targets...", style: .info, newLine: true)
         
-        // Get the name of the package to install
+        let fileManager = FileManager.default
         let name = try value("name", from: arguments)
+        let installBar = console.loadingBar(title: "Installing Dependency")
+        guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
+            throw EtherError.fail("Bad path to package manifest. Make sure you are in the project root.")
+        }
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
+            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
+        }
+        let packageManifest = try String(contentsOf: manifestURL)
+        var packageData = try Data(contentsOf: resolvedURL).json()
+        var mutablePackageManifest = NSMutableString(string: packageManifest)
         
-        // Fetch the URL and version for the package from packagecatalog.com
-        let (url, version) = try { ()throws -> (String, String) in
-            var v = ""
-            var u = ""
-            if let version = arguments.options["version"] { v = version }
-            if let url = arguments.options["url"] { u = url } else {
-                if name.contains("/") {
-                    let json = try self.client.get(from: self.baseURL + name, withParameters: [:])
-                    
-                    u = String(describing: json["ghUrl"]!) + ".git"
-                    v = String(describing: json["version"]!)
-                } else {
-                    let json = try self.client.get(from: "https://packagecatalog.com/api/search/\(name)", withParameters: ["items": "1", "chart": "moststarred"])
-                    
-                    guard let data = json["data"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: data") }
-                    guard let hits = data["hits"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: hits (1)") }
-                    guard let results = hits["hits"] as? [JSON] else { throw fail(bar: installingProgressBar, with: "Bad JSON key: hits (2)") }
-                    guard let source = results[0]["_source"] as? JSON else { throw fail(bar: installingProgressBar, with: "Bad JSON key: _source") }
-                    
-                    u = String(describing: source["git_clone_url"]!)
-                    if v == "" { v = String(describing: source["latest_version"]!) }
+        let targets = try getTargets(fromManifest: packageManifest)
+        var useTargets: [String] = []
+        
+        if targets.count > 1 {
+            targetFetch: for target in targets {
+                let response = console.ask("Would you like to add the package to the target '\(target)'? (y,n,q,?)")
+                
+                switch response {
+                case "y": useTargets.append(target)
+                case "n": break
+                case "q": break targetFetch
+                default: console.output("""
+                y: Add the package as a dependency to the target.
+                n: Do not add the package as a dependency to the target.
+                q: Do not add the package as a dependency to the current target or any of the other targets.
+                ?: Output this message.
+                """, style: .info, newLine: true)
                 }
             }
-            return (u,v)
-        }()
-        
-        // Get the default FileManager instance
-        let manager = FileManager.default
-        
-        // Check to make sure the Package.swift file exists
-        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw EtherError.fail("There is no Package.swift file in the current directory") }
-        
-        // Get the data from the package manifest file
-        let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
-        
-        // Get the number of packages installed before the install occurs
-        let oldPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON]
-        
-        // Convert the package manifets data to a String so we can read and modify it
-        guard let packageString = String(data: packageData!, encoding: .utf8) else { throw fail(bar: installingProgressBar, with: "Unable to read Package.swift") }
-        
-        // The package manifets contents that will be changed based off of RegEx matches
-        let mutableString = NSMutableString(string: packageString)
-        
-        // The version numbers for the package that will be installed
-        let versionNumbers = version.characters.split(separator: ".").map(String.init)
-        
-        // A RegEx pattern that will mach the packages in the dependencies array
-        let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.Package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\))(?:\\R?)", options: .anchorsMatchLines)
-        
-        // Check to make sure that the dependencies array exists
-        if try NSRegularExpression(pattern: "(\\][\\n\\s]*,[\\n\\s]*|Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"[\\n\\s]*,[\\n\\s]*)dependencies:[\\n\\s]*\\[(.|\\n)*\\]", options: []).matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count < 1 {
-            
-            // Create a RegEx to find where the start of the dependencies array should start
-            let dependenciesArrayStartPattern = try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\])", options: [])
-            
-            // Get the number of matches in the package manifest file for the dependenciesArrayStartPattern
-            let numberOfMatches = dependenciesArrayStartPattern.numberOfMatches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count))
-            
-            // Get the range of the match that should be replaced.
-            let rangeOfMatch = dependenciesArrayStartPattern.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count))[numberOfMatches - 1].range
-            
-            // Create the dependencies array
-            dependenciesArrayStartPattern.replaceMatches(in: mutableString, options: [], range: rangeOfMatch, withTemplate: "$1,\n    dependencies: [\n    ]")
-        }
-        
-        // Check to see if there are packages in the dependencies array
-        if packageInstenceRegex.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count != 0 {
-            
-            // Add the new package to the dependencies array
-            packageInstenceRegex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1,\n        .Package(url: \"\(url)\", Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2])))\n")
         } else {
-            
-            // Add the new package to the dependencies array
-            try NSRegularExpression(pattern: "(Package\\([\\n\\s]*name\\s*:\\s*\\\".*\\\"|targets\\s*:\\s*\\[(\\n|.)*\\]),[\\s\\n]*dependencies:\\s*\\[", options: []).replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$0\n        .Package(url: \"\(url)\", Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2])))")
+            useTargets.append(targets[0])
         }
         
-        do {
-            // Write the updated package information to the package manifest
-            try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-            
-            // Update the project's packages
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "fetch"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        } catch let error {
-            installingProgressBar.fail()
-            throw error
+        installBar.start()
+        
+        let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\)),?(?:\\R?)", options: .anchorsMatchLines)
+        let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
+        let newPackageData = try getPackageData(from: "https://packagecatalog.com/api/search/\(name)")
+        let packageInstance = "$1,\n        .package(url: \"\(newPackageData.url)\", .exact(\"\(newPackageData.version)\"))\n"
+        
+        if packageInstenceRegex.matches(in: packageManifest, options: [], range: NSMakeRange(0, packageManifest.utf8.count)).count > 0  {
+            packageInstenceRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
+        } else {
+            dependenciesRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
         }
         
-        // Close the progress bar
-        installingProgressBar.finish()
-        if let pins = oldPins {
-            
-            // Get the new number of project dependencies
-            if let newPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON] {
-                let newPackages = newPins.count - pins.count
-                
-                // Output the number of packages that got installed
-                console.output("📦  \(newPackages) packages installed", style: .custom(.white), newLine: true)
+        try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
+        
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        
+        let dependencyName = try self.getPackageName(for: newPackageData.url, with: fileManager)
+        for target in useTargets {
+            mutablePackageManifest = try addDependency(dependencyName, to: target, inManifest: mutablePackageManifest)
+        }
+        
+        try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
+        
+        guard let oldObject = packageData?["object"] as? JSON,
+              let oldPins = oldObject["pins"] as? [JSON] else { return }
+        
+        packageData = try Data(contentsOf: resolvedURL).json()
+        guard let object = packageData?["object"] as? JSON,
+              let pins = object["pins"] as? [JSON] else { return }
+        
+        let newPackageCount = pins.count - oldPins.count
+        
+        installBar.finish()
+        console.output("📦  \(newPackageCount) packages installed", style: .plain, newLine: true)
+    }
+    
+    fileprivate func getTargets(fromManifest packageData: String)throws -> [String] {
+        let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: NSRegularExpression.Options.dotMatchesLineSeparators)
+        let targetMatches = targetPattern.matches(in: packageData, options: [], range: NSMakeRange(0, packageData.utf8.count))
+        
+        let targetNames = targetMatches.map { (match) in
+            return targetPattern.replacementString(for: match, in: packageData, offset: 0, template: "$2")
+        }
+        
+        return targetNames
+    }
+    
+    fileprivate func getPackageData(from url: String)throws -> (url: String, version: String) {
+        let packageUrl: String
+        let version: String
+        
+        let json = try client.get(from: url, withParameters: ["items": "1", "chart": "moststarred"])
+        guard let data = json["data"] as? JSON,
+              let hits = data["hits"] as? JSON,
+              let results = hits["hits"] as? [JSON],
+              let source = results[0]["_source"] as? JSON else {
+                  throw EtherError.fail("Bad JSON")
+              }
+        
+        packageUrl = String(describing: source["git_clone_url"]!)
+        version = String(describing: source["latest_version"]!)
+        
+        return (url: packageUrl, version: version)
+    }
+    
+    fileprivate func addDependency(_ dependency: String, to target: String, inManifest packageData: NSMutableString)throws -> NSMutableString {
+        let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: .dotMatchesLineSeparators)
+        let dependenciesPattern = try NSRegularExpression(pattern: "(dependencies:\\s*\\[\\n?(\\s*).*?(\"|\\))),?\\s*\\]", options: .dotMatchesLineSeparators)
+        let targetMatches = targetPattern.matches(in: String(packageData), options: [], range: NSMakeRange(0, packageData.length))
+        let replacementString = packageData
+        
+        guard let targetRange: NSRange = targetMatches.map({ (match) -> (name: String, range: NSRange) in
+            let name = targetPattern.replacementString(for: match, in: packageData as String, offset: 0, template: "$2")
+            let range = match.range
+            return (name: name, range: range)
+        }).filter({ (name: String, range: NSRange) -> Bool in
+            return name == target
+        }).first?.1 else { throw EtherError.fail("Attempted to add a dependency to a non-existent target") }
+        
+        dependenciesPattern.replaceMatches(in: replacementString, options: [], range: targetRange, withTemplate: "$1, \"\(dependency)\"]")
+        
+        return replacementString
+    }
+    
+    fileprivate func getPackageName(`for` url: String, with fileManager: FileManager)throws -> String {
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
+            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
+        }
+        let packageData = try Data(contentsOf: resolvedURL).json()
+        
+        guard let object = packageData?["object"] as? JSON,
+            let pins = object["pins"] as? [JSON] else { throw EtherError.fail("Unable to read Package.resolved") }
+        
+        guard let package = try pins.filter({ (json) -> Bool in
+            guard let repoURL = json["repositoryURL"] as? String else {
+                throw EtherError.fail("Unable to read Package.resolved")
             }
+            return repoURL == url
+        }).first else {
+            throw EtherError.fail("Unable to read Package.resolved")
         }
+        
+        guard let name = package["package"] as? String else {
+            throw EtherError.fail("Unable to read Package.resolved")
+        }
+        
+        return name
     }
 }
 
