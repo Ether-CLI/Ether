@@ -168,4 +168,17 @@ extension NSMutableString {
         
         dependenciesPattern.replaceMatches(in: self, options: [], range: targetRange, withTemplate: "$1, \"\(dependency)\"]")
     }
+    
+    /// Removes a package dependency from all targets in a package manifest file.
+    ///
+    /// - Parameters:
+    ///   - dependency: The name of the dependency that will be removed from all targets.
+    /// - Returns: The package manifest with the dependency added to the target.
+    /// - Throws: Any errors that originate when creating an `NSRegularExpression`.
+    public func removeDependency(_ dependency: String)throws {
+        let dependenciesPattern = try NSRegularExpression(pattern: "(dependencies: *\\[)((\\s*(\\.\\w+)?\"\\w+\",?\\s*)*)\"\(dependency)\",?\\s*((\\s*(\\.\\w+)?\"\\w+\",?\\s*)*)(\\])", options: .dotMatchesLineSeparators)
+        let range = NSMakeRange(0, self.length)
+        
+        dependenciesPattern.replaceMatches(in: self, options: [], range: range, withTemplate: "$1$2$5$8")
+    }
 }
