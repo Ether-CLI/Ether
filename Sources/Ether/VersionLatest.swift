@@ -48,41 +48,30 @@ public final class VersionLatest: Command {
         let updateBar = console.loadingBar(title: "Updating Package Versions")
         updateBar.start()
         
-        let versionRegex = try NSRegularExpression(pattern: "\\.Package\\(url\\:\\s?\\\"https\\:\\/\\/github\\.com([\\d\\w\\:\\/\\.\\@\\-]+)\\.git\\\"\\,([\\d\\w\\(\\)\\:\\s\\,])+\\)\\,?", options: .anchorsMatchLines)
-        
-        let manager = FileManager.default
-        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw EtherError.fail("There is no Package.swift file in the current directory") }
-        let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
-        
-        guard let packageString = String(data: packageData!, encoding: .utf8) else { throw fail(bar: updateBar, with: "Unable to read Package.swift") }
-        let mutableString = NSMutableString(string: packageString)
-        
-        if versionRegex.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count == 0 {
-            throw fail(bar: updateBar, with: "There appear to no dependencies in you Package.swift")
+        let fileManager = FileManager.default
+        let manifest = try Manifest.current.get()
+        let nsManifest = NSMutableString(string: manifest)
+        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(\\.?\\w+(\\(|:)\\s*\"[\\w\\.]+\"\\)?)(\\))", options: [])
+        let matches = versionPattern.matches(in: manifest, options: [], range: NSMakeRange(0, manifest.utf8.count))
+        let packageNames = matches.map { match -> String in
+            let name = versionPattern.replacementString(for: match, in: manifest, offset: 0, template: "$2")
+            return name
+        }
+        let packageVersions = try packageNames.map { name -> String in
+            return try Manifest.current.getPackageData(for: name).version
         }
         
-        let nsPackage = NSString(string: packageString)
-        let results = versionRegex.matches(in: packageString, options: .withoutAnchoringBounds, range: NSMakeRange(0, NSString(string: packageString).length))
-        let stringResults = results.map { nsPackage.substring(with: $0.range)}
-        
-        for result in stringResults {
-            let packageName = versionRegex.stringByReplacingMatches(in: result, options: .withoutAnchoringBounds, range: NSMakeRange(0, NSString(string: result).length), withTemplate: "$1")
-            let regexPackageName = packageName.replacingOccurrences(of: "/", with: "\\/")
-            let replaceRegex = try NSRegularExpression(pattern: "(        \\.Package\\(url\\:\\s?\\\"https\\:\\/\\/github\\.com\(regexPackageName)\\.git\\\"\\,\\s?)([\\d\\w\\(\\)\\:\\s\\,]+)(\\))", options: .anchorsMatchLines)
-            
-            let json = try self.client.get(from: self.baseURL + packageName, withParameters: [:])
-            
-            guard let version = json["version"] as? String else { throw fail(bar: updateBar, with: "Bad JSON key for \(packageName) version") }
-            let versionNumbers = version.characters.split(separator: ".").map(String.init)
-            let formattedVersion = "Version(\(versionNumbers[0]),\(versionNumbers[1]),\(versionNumbers[2]))"
-            
-            if replaceRegex.matches(in: mutableString as String, options: [], range: NSMakeRange(0, mutableString.length)).count == 0 { throw fail(bar: updateBar, with: "Error in Regex pattern") }
-            replaceRegex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "$1\(formattedVersion)$3")
+        try zip(packageVersions, packageNames).forEach { (arg) in
+            let (version, name) = arg
+            let pattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/\(name)\\.git\",\\s*)(\\.?\\w+(\\(|:)\\s*\"[\\w\\.]+\"\\)?)(\\))", options: [])
+            pattern.replaceMatches(in: nsManifest, options: [], range: NSMakeRange(0, nsManifest.length), withTemplate: "$1.exact(\"\(version)\"))")
         }
-        try (mutableString as String).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
         
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "fetch"])
+        try String(nsManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
+        _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
         
         updateBar.finish()
     }
