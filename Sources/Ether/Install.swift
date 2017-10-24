@@ -159,6 +159,14 @@ public final class Install: Command {
         return (url: packageUrl, version: version)
     }
     
+    /// Adds a package dependency to a target in a package manifest file.
+    ///
+    /// - Parameters:
+    ///   - dependency: The name of the dependency that will be added to a target.
+    ///   - target: The target the dependency will be added to.
+    ///   - packageData: The contents of the package manifest file.
+    /// - Returns: The package manifest with the dependency added to the target.
+    /// - Throws: Any errors that originate when creating an `NSRegularExpression`.
     fileprivate func addDependency(_ dependency: String, to target: String, inManifest packageData: NSMutableString)throws -> NSMutableString {
         let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: .dotMatchesLineSeparators)
         let dependenciesPattern = try NSRegularExpression(pattern: "(dependencies:\\s*\\[\\n?(\\s*).*?(\"|\\))),?\\s*\\]", options: .dotMatchesLineSeparators)
