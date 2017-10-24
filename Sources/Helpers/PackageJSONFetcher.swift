@@ -24,7 +24,7 @@ import Foundation
 import Core
 
 public enum GetJSONError: Error {
-    case badURL
+    case badURL(String)
     case noJSON
 }
 
@@ -57,7 +57,7 @@ public final class PackageJSONFetcher: APIClient {
                 })
                 completion(json, error)
             } catch {}
-        } else { completion(nil, GetJSONError.badURL) }
+        } else { completion(nil, GetJSONError.badURL(urlString + "?" + parameterString)) }
     }
     
     /// Synchronously fetches data from a URL
