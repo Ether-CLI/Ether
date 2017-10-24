@@ -178,6 +178,13 @@ public final class Install: Command {
         return replacementString
     }
     
+    /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
+    ///
+    /// - Parameters:
+    ///   - url: The URL of the package that the name is to get fetched from.
+    ///   - fileManager: A file manager to use get the current directory path.
+    /// - Returns: The name of the package that was found.
+    /// - Throws: An error is thrown if either, 1) The data in the Package.resolved file is corrupted, or 2) A package does not exist with the URL passed in
     fileprivate func getPackageName(`for` url: String, with fileManager: FileManager)throws -> String {
         guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
             throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
