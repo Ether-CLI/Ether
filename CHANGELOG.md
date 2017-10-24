@@ -1,3 +1,8 @@
+## [1.7.0] - 2017-09-18
+
+### Added
+- Ether now supports the SPM 4 manifest API!
+
 ## [1.6.2] - 2017-09-18
 
 ### Fixed
