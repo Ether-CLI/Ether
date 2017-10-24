@@ -84,7 +84,7 @@ public final class Install: Command {
         let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
         
         // Get the data for the package to install
-        let newPackageData = try getPackageData(for: name)
+        let newPackageData = try Manifest.current.getPackageData(for: name)
         let packageVersion = arguments.options["version"] ?? newPackageData.version
         let packageUrl = arguments.options["url"] ?? newPackageData.url
         
@@ -163,42 +163,6 @@ public final class Install: Command {
         }
         
         return acceptedTargets
-    }
-    
-    /// Gets the URL and version of a package from the IBM package catalog API on a search URL.
-    ///
-    /// - Parameter name: The name of the package to get data for. If it contains a forward slash, the data will be fetched for the matching package, if it does not contain a forward slash, a search will be preformed and the first result will be used.
-    /// - Returns: The URL and version of the package found.
-    /// - Throws: Any errors that occur while fetching the JSON, or unwrapping the package data.
-    fileprivate func getPackageData(for name: String)throws -> (url: String, version: String) {
-        let packageUrl: String
-        let version: String
-        
-        if name.contains("/") {
-            let clientUrl = "https://packagecatalog.com/data/package/\(name)"
-            let json = try client.get(from: clientUrl, withParameters: [:])
-            guard let ghUrl = json["ghUrl"] as? String,
-                  let packageVersion = json["version"] as? String else {
-                    throw EtherError.fail("Bad JSON")
-            }
-            
-            packageUrl = ghUrl
-            version = packageVersion
-        } else {
-            let clientUrl = "https://packagecatalog.com/api/search/\(name)"
-            let json = try client.get(from: clientUrl, withParameters: ["items": "1", "chart": "moststarred"])
-            guard let data = json["data"] as? JSON,
-                  let hits = data["hits"] as? JSON,
-                  let results = hits["hits"] as? [JSON],
-                  let source = results[0]["_source"] as? JSON else {
-                    throw EtherError.fail("Bad JSON")
-            }
-            
-            packageUrl = String(describing: source["git_clone_url"]!)
-            version = String(describing: source["latest_version"]!)
-        }
-        
-        return (url: packageUrl, version: version)
     }
 }
 
