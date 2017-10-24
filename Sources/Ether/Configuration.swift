@@ -33,6 +33,7 @@
 
 import Console
 import Foundation
+import Helpers
 
 public final class Configuration: Command {
     public enum Keys {
