@@ -93,11 +93,11 @@ public class Manifest {
             }
             return repoURL == name
         }).first else {
-            throw EtherError.fail("Unable to read Package.resolved")
+            throw EtherError.fail("No package data found for name '\(name)'")
         }
         
         guard let url = package["repositoryURL"] as? String else {
-            throw EtherError.fail("Unable to read Package.resolved")
+            throw EtherError.fail("Unable to read repo URL for package with name '\(name)'")
         }
         
         return url
