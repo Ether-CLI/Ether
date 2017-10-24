@@ -28,6 +28,21 @@ public class Manifest {
     
     private init() {}
     
+    /// Gets the package manifest for the current project.
+    ///
+    /// - Returns: The manifest data.
+    /// - Throws: If a package manifest is not found in the current directory.
+    public func get()throws -> String {
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
+            throw EtherError.fail("Unable to create URL for package manifest file.")
+        }
+        if !fileManager.fileExists(atPath: "\(fileManager.currentDirectoryPath)/Package.swift") {
+            throw EtherError.fail("Bad path to package manifest. Make sure you are in the project root.")
+        }
+        
+        return try String(contentsOf: resolvedURL)
+    }
+    
     /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
     ///
     /// - Parameter url: The URL of the package that the name is to get fetched from.
