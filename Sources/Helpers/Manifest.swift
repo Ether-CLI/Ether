@@ -60,6 +60,36 @@ public class Manifest {
         return name
     }
     
+    /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
+    ///
+    /// - Parameter name: The ame of the package that the URL is to get fetched from.
+    /// - Returns: The URL of the package that was found.
+    /// - Throws: An error is thrown if either, 1) The data in the Package.resolved file is corrupted, or 2) A package does not exist with the name passed in
+    public func getPackageUrl(`for` name: String)throws -> String {
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
+            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
+        }
+        let packageData = try Data(contentsOf: resolvedURL).json()
+        
+        guard let object = packageData?["object"] as? JSON,
+            let pins = object["pins"] as? [JSON] else { throw EtherError.fail("Unable to read Package.resolved") }
+        
+        guard let package = try pins.filter({ (json) -> Bool in
+            guard let repoURL = json["package"] as? String else {
+                throw EtherError.fail("Unable to read Package.resolved")
+            }
+            return repoURL == name
+        }).first else {
+            throw EtherError.fail("Unable to read Package.resolved")
+        }
+        
+        guard let url = package["repositoryURL"] as? String else {
+            throw EtherError.fail("Unable to read Package.resolved")
+        }
+        
+        return url
+    }
+    
     /// Gets that names of all the current projects targets.
     ///
     /// - Parameter packageData: The contents of the package manifest file.
