@@ -105,7 +105,7 @@ public final class Install: Command {
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
         // Get the new package name and add it to the previously accepted targets.
-        let dependencyName = try self.getPackageName(for: newPackageData.url, with: fileManager)
+        let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
         for target in useTargets {
             mutablePackageManifest = try addDependency(dependencyName, to: target, inManifest: mutablePackageManifest)
         }
@@ -242,38 +242,6 @@ public final class Install: Command {
         dependenciesPattern.replaceMatches(in: replacementString, options: [], range: targetRange, withTemplate: "$1, \"\(dependency)\"]")
         
         return replacementString
-    }
-    
-    /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
-    ///
-    /// - Parameters:
-    ///   - url: The URL of the package that the name is to get fetched from.
-    ///   - fileManager: A file manager to use get the current directory path.
-    /// - Returns: The name of the package that was found.
-    /// - Throws: An error is thrown if either, 1) The data in the Package.resolved file is corrupted, or 2) A package does not exist with the URL passed in
-    fileprivate func getPackageName(`for` url: String, with fileManager: FileManager)throws -> String {
-        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
-            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
-        }
-        let packageData = try Data(contentsOf: resolvedURL).json()
-        
-        guard let object = packageData?["object"] as? JSON,
-            let pins = object["pins"] as? [JSON] else { throw EtherError.fail("Unable to read Package.resolved") }
-        
-        guard let package = try pins.filter({ (json) -> Bool in
-            guard let repoURL = json["repositoryURL"] as? String else {
-                throw EtherError.fail("Unable to read Package.resolved")
-            }
-            return repoURL == url
-        }).first else {
-            throw EtherError.fail("Unable to read Package.resolved")
-        }
-        
-        guard let name = package["package"] as? String else {
-            throw EtherError.fail("Unable to read Package.resolved")
-        }
-        
-        return name
     }
 }
 
