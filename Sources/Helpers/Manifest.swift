@@ -123,6 +123,24 @@ public class Manifest {
         
         return targetNames
     }
+    
+    /// Gets the pins from `Package.resolved`.
+    ///
+    /// - Returns: The projects package pins.
+    /// - Throws: An Ether error if a `Package.resolved` file is not found, or the JSON it contains is malformed.
+    public func getPins()throws -> [JSON] {
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
+            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
+        }
+        let packageData = try Data(contentsOf: resolvedURL).json()
+        
+        guard let object = packageData?["object"] as? JSON,
+              let pins = object["pins"] as? [JSON] else {
+                throw EtherError.fail("Unable to read Package.resolved")
+        }
+        
+        return pins
+    }
 }
 
 extension NSMutableString {
