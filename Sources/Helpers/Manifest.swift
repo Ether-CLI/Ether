@@ -59,6 +59,27 @@ public class Manifest {
         
         return name
     }
+    
+    /// Gets that names of all the current projects targets.
+    ///
+    /// - Parameter packageData: The contents of the package manifest file.
+    /// - Returns: All the target names.
+    /// - Throws: Any errors that occur while creating an `NSRegularExpression` to match targets against.
+    public func getTargets()throws -> [String] {
+        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
+            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
+        }
+        let packageData = try String(contentsOf: resolvedURL)
+        
+        let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: NSRegularExpression.Options.dotMatchesLineSeparators)
+        let targetMatches = targetPattern.matches(in: packageData, options: [], range: NSMakeRange(0, packageData.utf8.count))
+        
+        let targetNames = targetMatches.map { (match) in
+            return targetPattern.replacementString(for: match, in: packageData, offset: 0, template: "$2")
+        }
+        
+        return targetNames
+    }
 }
 
 extension NSMutableString {
