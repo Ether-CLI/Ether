@@ -51,7 +51,10 @@ public final class Update: Command {
         } else {
             let updateBar = console.loadingBar(title: "Updating Packages")
             updateBar.start()
+            _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
             updateBar.finish()
         }
     }
