@@ -77,6 +77,9 @@ public final class Install: Command {
         
         installBar.start()
         
+        // Clear the .build directory to prevent caching conflicts
+        _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
+        
         let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\)),?(?:\\R?)", options: .anchorsMatchLines)
         let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
         
@@ -110,7 +113,7 @@ public final class Install: Command {
         // Write the Package.swift file again
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
         
         // Calculate the number of package that where installed and output it.
         guard let oldObject = packageData?["object"] as? JSON,
