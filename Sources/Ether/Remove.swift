@@ -49,13 +49,12 @@ public final class Remove: Command {
         
         let manager = FileManager.default
         let name = try value("name", from: arguments)
-        let regex = try NSRegularExpression(pattern: "\\,?\n        \\.Package\\(url:\\s?\\\"([\\d\\-\\.\\@\\w\\/\\:])+\(name)\\.git\\\"\\,\\s?([\\w\\d\\:\\(\\)\\s\\,])+\\)", options: .caseInsensitive)
-        let oldPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON]
+        let url = try Manifest.current.getPackageUrl(for: name)
         
-        if !manager.fileExists(atPath: "\(manager.currentDirectoryPath)/Package.swift") { throw EtherError.fail("There is no Package.swift file in the current directory") }
-        let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.swift")
+        let regex = try NSRegularExpression(pattern: "\\,?\\n *\\.package\\(url: *\"\(url)\", *\\.?\\w+(:|\\() *\"([\\d\\.]+)\"\\)?\\),?", options: .caseInsensitive)
+        let oldPins = try Manifest.current.getPins()
         
-        guard let packageString = String(data: packageData!, encoding: .utf8) else { throw fail(bar: removingProgressBar, with: "Unable to read Package.swift") }
+        let packageString = try Manifest.current.get()
         let mutableString = NSMutableString(string: packageString)
         
         if regex.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count == 0 {
@@ -63,23 +62,23 @@ public final class Remove: Command {
         }
         
         regex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "")
+        try mutableString.removeDependency(name)
         
         do {
             try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "fetch"])
+            _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
         } catch let error {
             removingProgressBar.fail()
             throw error
         }
         
-        removingProgressBar.finish()
+        let pins = try Manifest.current.getPins()
+        let pinsCount = oldPins.count - pins.count
         
-        if let pins = oldPins {
-            if let newPins = try manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins")?.json()?["pins"] as? [JSON] {
-                let newPackages = pins.count - newPins.count
-                console.output("📦  \(newPackages) packages removed", style: .custom(.white), newLine: true)
-            }
-        }
+        removingProgressBar.finish()
+        console.output("📦  \(pinsCount) packages removed", style: .custom(.white), newLine: true)
     }
 }
