@@ -39,7 +39,7 @@
       },
       {
         "package": "JSON",
-        "repositoryURL": "https://github.com/vapor/json",
+        "repositoryURL": "https://github.com/vapor/json.git",
         "state": {
           "branch": null,
           "revision": "735800d8f2e75ebe3be25559eb6a781f4666dcfc",

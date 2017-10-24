@@ -7,8 +7,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/vapor/console.git", from: "2.2.0"),
         .package(url: "https://github.com/vapor/json.git", from: "2.2.0"),
-        .package(url: "https://github.com/vapor/core.git", from: "2.1.2"),
-        .package(url: "https://github.com/vapor/json", from: "2.2.0"),
+        .package(url: "https://github.com/vapor/core.git", from: "2.1.2")
     ],
     targets: [
         .target(name: "Helpers", dependencies: ["Core", "JSON"]),
