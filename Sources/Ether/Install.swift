@@ -130,6 +130,11 @@ public final class Install: Command {
         console.output("📦  \(newPackageCount) packages installed", style: .plain, newLine: true)
     }
     
+    /// Gets that names of all the current projects targets.
+    ///
+    /// - Parameter packageData: The contents of the package manifest file.
+    /// - Returns: All the target names.
+    /// - Throws: Any errors that occur while creating an `NSRegularExpression` to match targets against.
     fileprivate func getTargets(fromManifest packageData: String)throws -> [String] {
         let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: NSRegularExpression.Options.dotMatchesLineSeparators)
         let targetMatches = targetPattern.matches(in: packageData, options: [], range: NSMakeRange(0, packageData.utf8.count))
