@@ -184,16 +184,29 @@ public final class Install: Command {
         let packageUrl: String
         let version: String
         
-        let json = try client.get(from: url, withParameters: ["items": "1", "chart": "moststarred"])
-        guard let data = json["data"] as? JSON,
-              let hits = data["hits"] as? JSON,
-              let results = hits["hits"] as? [JSON],
-              let source = results[0]["_source"] as? JSON else {
-                  throw EtherError.fail("Bad JSON")
-              }
-        
-        packageUrl = String(describing: source["git_clone_url"]!)
-        version = String(describing: source["latest_version"]!)
+        if url.contains("/") {
+            let clientUrl = "https://packagecatalog.com/data/package/\(url)"
+            let json = try client.get(from: clientUrl, withParameters: [:])
+            guard let ghUrl = json["ghUrl"] as? String,
+                  let packageVersion = json["version"] as? String else {
+                    throw EtherError.fail("Bad JSON")
+            }
+            
+            packageUrl = ghUrl
+            version = packageVersion
+        } else {
+            let clientUrl = "https://packagecatalog.com/api/search/\(url)"
+            let json = try client.get(from: clientUrl, withParameters: ["items": "1", "chart": "moststarred"])
+            guard let data = json["data"] as? JSON,
+                  let hits = data["hits"] as? JSON,
+                  let results = hits["hits"] as? [JSON],
+                  let source = results[0]["_source"] as? JSON else {
+                    throw EtherError.fail("Bad JSON")
+            }
+            
+            packageUrl = String(describing: source["git_clone_url"]!)
+            version = String(describing: source["latest_version"]!)
+        }
         
         return (url: packageUrl, version: version)
     }
