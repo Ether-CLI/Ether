@@ -81,8 +81,11 @@ public final class Install: Command {
         let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
         
         // Get the data for the package to install
-        let newPackageData = try getPackageData(from: "https://packagecatalog.com/api/search/\(name)")
-        let packageInstance = "$1,\n        .package(url: \"\(newPackageData.url)\", .exact(\"\(newPackageData.version)\"))\n"
+        let newPackageData = try getPackageData(for: name)
+        let packageVersion = arguments.options["version"] ?? newPackageData.version
+        let packageUrl = arguments.options["url"] ?? newPackageData.url
+        
+        let packageInstance = "$1,\n        .package(url: \"\(packageUrl)\", .exact(\"\(packageVersion)\"))\n"
         
         // Add the new package instance to the Package dependencies array.
         if packageInstenceRegex.matches(in: packageManifest, options: [], range: NSMakeRange(0, packageManifest.utf8.count)).count > 0  {
