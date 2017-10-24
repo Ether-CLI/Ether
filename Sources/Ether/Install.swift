@@ -177,15 +177,15 @@ public final class Install: Command {
     
     /// Gets the URL and version of a package from the IBM package catalog API on a search URL.
     ///
-    /// - Parameter url: The search URL for the IBM package catalog: `https://packagecatalog.com/api/search/{name}`
-    /// - Returns: The URL and version of the first resulting package in the search.
+    /// - Parameter name: The name of the package to get data for. If it contains a forward slash, the data will be fetched for the matching package, if it does not contain a forward slash, a search will be preformed and the first result will be used.
+    /// - Returns: The URL and version of the package found.
     /// - Throws: Any errors that occur while fetching the JSON, or unwrapping the package data.
-    fileprivate func getPackageData(from url: String)throws -> (url: String, version: String) {
+    fileprivate func getPackageData(for name: String)throws -> (url: String, version: String) {
         let packageUrl: String
         let version: String
         
-        if url.contains("/") {
-            let clientUrl = "https://packagecatalog.com/data/package/\(url)"
+        if name.contains("/") {
+            let clientUrl = "https://packagecatalog.com/data/package/\(name)"
             let json = try client.get(from: clientUrl, withParameters: [:])
             guard let ghUrl = json["ghUrl"] as? String,
                   let packageVersion = json["version"] as? String else {
@@ -195,7 +195,7 @@ public final class Install: Command {
             packageUrl = ghUrl
             version = packageVersion
         } else {
-            let clientUrl = "https://packagecatalog.com/api/search/\(url)"
+            let clientUrl = "https://packagecatalog.com/api/search/\(name)"
             let json = try client.get(from: clientUrl, withParameters: ["items": "1", "chart": "moststarred"])
             guard let data = json["data"] as? JSON,
                   let hits = data["hits"] as? JSON,
