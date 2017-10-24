@@ -59,6 +59,8 @@ public final class Install: Command {
         let fileManager = FileManager.default
         let name = try value("name", from: arguments)
         let installBar = console.loadingBar(title: "Installing Dependency")
+        
+        // Get package manifest and JSON data
         guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
             throw EtherError.fail("Bad path to package manifest. Make sure you are in the project root.")
         }
@@ -69,6 +71,7 @@ public final class Install: Command {
         var packageData = try Data(contentsOf: resolvedURL).json()
         var mutablePackageManifest = NSMutableString(string: packageManifest)
         
+        // Get the names of the targets to add the dependency to
         let targets = try getTargets(fromManifest: packageManifest)
         let useTargets: [String] = inquireFor(targets: targets)
         
@@ -76,27 +79,37 @@ public final class Install: Command {
         
         let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\)),?(?:\\R?)", options: .anchorsMatchLines)
         let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
+        
+        // Get the data for the package to install
         let newPackageData = try getPackageData(from: "https://packagecatalog.com/api/search/\(name)")
         let packageInstance = "$1,\n        .package(url: \"\(newPackageData.url)\", .exact(\"\(newPackageData.version)\"))\n"
         
+        // Add the new package instance to the Package dependencies array.
         if packageInstenceRegex.matches(in: packageManifest, options: [], range: NSMakeRange(0, packageManifest.utf8.count)).count > 0  {
             packageInstenceRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
         } else {
             dependenciesRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
         }
         
+        // Write the new package manifest to the Package.swift file
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
+        // Update the packages.
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
+        // Get the new package name and add it to the previously accepted targets.
         let dependencyName = try self.getPackageName(for: newPackageData.url, with: fileManager)
         for target in useTargets {
             mutablePackageManifest = try addDependency(dependencyName, to: target, inManifest: mutablePackageManifest)
         }
         
+        // Write the Package.swift file again
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        
+        // Calculate the number of package that where installed and output it.
         guard let oldObject = packageData?["object"] as? JSON,
               let oldPins = oldObject["pins"] as? [JSON] else { return }
         
