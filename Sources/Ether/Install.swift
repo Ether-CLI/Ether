@@ -141,6 +141,11 @@ public final class Install: Command {
         return targetNames
     }
     
+    /// Gets the URL and version of a package from the IBM package catalog API on a search URL.
+    ///
+    /// - Parameter url: The search URL for the IBM package catalog: `https://packagecatalog.com/api/search/{name}`
+    /// - Returns: The URL and version of the first resulting package in the search.
+    /// - Throws: Any errors that occur while fetching the JSON, or unwrapping the package data.
     fileprivate func getPackageData(from url: String)throws -> (url: String, version: String) {
         let packageUrl: String
         let version: String
