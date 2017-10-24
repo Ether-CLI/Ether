@@ -69,7 +69,7 @@ public final class Install: Command {
         }
         let packageManifest = try String(contentsOf: manifestURL)
         var packageData = try Data(contentsOf: resolvedURL).json()
-        var mutablePackageManifest = NSMutableString(string: packageManifest)
+        let mutablePackageManifest = NSMutableString(string: packageManifest)
         
         // Get the names of the targets to add the dependency to
         let targets = try getTargets(fromManifest: packageManifest)
@@ -107,7 +107,7 @@ public final class Install: Command {
         // Get the new package name and add it to the previously accepted targets.
         let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
         for target in useTargets {
-            mutablePackageManifest = try addDependency(dependencyName, to: target, inManifest: mutablePackageManifest)
+            try mutablePackageManifest.addDependency(dependencyName, to: target)
         }
         
         // Write the Package.swift file again
