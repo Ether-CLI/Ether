@@ -25,6 +25,7 @@ import Foundation
 public class Manifest {
     public static let current = Manifest()
     private let fileManager = FileManager.default
+    private let client = PackageJSONFetcher()
     
     private init() {}
     
