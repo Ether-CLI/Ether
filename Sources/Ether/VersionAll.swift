@@ -58,16 +58,6 @@ public final class VersionAll: Command {
             } else {
                 throw fail(bar: fetchingDataBar, with: "Unable to parse data from Package.resolved.")
             }
-        } else if let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.pins") {
-            if let packageJson = try packageData.json()?["pins"] as? [[String: AnyObject]] {
-                fetchingDataBar.finish()
-                for package in packageJson {
-                    console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
-                    console.output("v\(package["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
-                }
-            } else {
-                throw fail(bar: fetchingDataBar, with: "Unable to parse data from Package.pins.")
-            }
         } else {
             throw fail(bar: fetchingDataBar, with: "Make sure you are in the root of an SPM project.")
         }
