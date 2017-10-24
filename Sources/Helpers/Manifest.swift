@@ -60,3 +60,30 @@ public class Manifest {
         return name
     }
 }
+
+extension NSMutableString {
+    
+    /// Adds a package dependency to a target in a package manifest file.
+    ///
+    /// - Parameters:
+    ///   - dependency: The name of the dependency that will be added to a target.
+    ///   - target: The target the dependency will be added to.
+    ///   - packageData: The contents of the package manifest file.
+    /// - Returns: The package manifest with the dependency added to the target.
+    /// - Throws: Any errors that originate when creating an `NSRegularExpression`.
+    public func addDependency(_ dependency: String, to target: String)throws {
+        let targetPattern = try NSRegularExpression(pattern: "\\.(testT|t)arget\\(\\s*name:\\s\"(.*?)\".*?(\\)|\\])\\)", options: .dotMatchesLineSeparators)
+        let dependenciesPattern = try NSRegularExpression(pattern: "(dependencies:\\s*\\[\\n?(\\s*).*?(\"|\\))),?\\s*\\]", options: .dotMatchesLineSeparators)
+        let targetMatches = targetPattern.matches(in: String(self), options: [], range: NSMakeRange(0, self.length))
+        
+        guard let targetRange: NSRange = targetMatches.map({ (match) -> (name: String, range: NSRange) in
+            let name = targetPattern.replacementString(for: match, in: self as String, offset: 0, template: "$2")
+            let range = match.range
+            return (name: name, range: range)
+        }).filter({ (name: String, range: NSRange) -> Bool in
+            return name == target
+        }).first?.1 else { throw EtherError.fail("Attempted to add a dependency to a non-existent target") }
+        
+        dependenciesPattern.replaceMatches(in: self, options: [], range: targetRange, withTemplate: "$1, \"\(dependency)\"]")
+    }
+}
