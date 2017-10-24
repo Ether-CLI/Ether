@@ -28,7 +28,7 @@ public class Manifest {
     
     private init() {}
     
-    public func getPackageName(`for` url: String, with fileManager: FileManager)throws -> String {
+    public func getPackageName(`for` url: String)throws -> String {
         guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
             throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
         }
