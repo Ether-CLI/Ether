@@ -70,27 +70,7 @@ public final class Install: Command {
         var mutablePackageManifest = NSMutableString(string: packageManifest)
         
         let targets = try getTargets(fromManifest: packageManifest)
-        var useTargets: [String] = []
-        
-        if targets.count > 1 {
-            targetFetch: for target in targets {
-                let response = console.ask("Would you like to add the package to the target '\(target)'? (y,n,q,?)")
-                
-                switch response {
-                case "y": useTargets.append(target)
-                case "n": break
-                case "q": break targetFetch
-                default: console.output("""
-                y: Add the package as a dependency to the target.
-                n: Do not add the package as a dependency to the target.
-                q: Do not add the package as a dependency to the current target or any of the other targets.
-                ?: Output this message.
-                """, style: .info, newLine: true)
-                }
-            }
-        } else {
-            useTargets.append(targets[0])
-        }
+        let useTargets: [String] = inquireFor(targets: targets)
         
         installBar.start()
         
@@ -144,6 +124,42 @@ public final class Install: Command {
         }
         
         return targetNames
+    }
+    
+    /// Asks the user if they want to add a dependency to the targets in the package manifest.
+    ///
+    /// - Parameter targets: The names of the targets available.
+    /// - Returns: The names of the targets that where accepted.
+    fileprivate func inquireFor(targets: [String]) -> [String] {
+        var acceptedTargets: [String] = []
+        var index = 0
+        
+        if targets.count > 1 {
+            targetFetch: while index < targets.count {
+                let target = targets[index]
+                let response = console.ask("Would you like to add the package to the target '\(target)'? (y,n,q,?)")
+                
+                switch response {
+                case "y":
+                    acceptedTargets.append(target)
+                    index += 1
+                case "n":
+                    index += 1
+                case "q":
+                    break targetFetch
+                default: console.output("""
+                y: Add the package as a dependency to the target.
+                n: Do not add the package as a dependency to the target.
+                q: Do not add the package as a dependency to the current target or any of the following targets.
+                ?: Output this message.
+                """, style: .info, newLine: true)
+                }
+            }
+        } else {
+            acceptedTargets.append(targets[0])
+        }
+        
+        return acceptedTargets
     }
     
     /// Gets the URL and version of a package from the IBM package catalog API on a search URL.
