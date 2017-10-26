@@ -12,14 +12,18 @@ You can see a whole list of the available commands [here](https://github.com/cal
 
 ### How do I install it?
 
-Currently, the only way is to run the following script:
+With Homebrew:
+
+```bash
+brew tap calebkleveter/homebrew-ether
+brew install ether
+```
+
+If you don't have, want, or can't use Homebrew, you can run the following script to install Ether:
 
 ```bash
 curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash
 ```
-Here is the [Gist that is used](https://gist.github.com/calebkleveter/2e5490c76df227c510035515a49f9f01).
-
-A Homebrew formula is in the works (if you want to help with it, that's fantastic!).
 
 ### How do I make my package available?
 
@@ -28,4 +32,3 @@ Ether uses IBM's [Swift Package Catalog](https://packagecatalog.com/) to search 
 ### What license is it under?
 
 Ether is under the MIT license.
-
