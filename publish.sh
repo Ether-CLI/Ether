@@ -8,12 +8,14 @@ TAG=$(git describe --abbrev=0 --tags);
 echo "📦  Building..."
 swift build -c release -Xswiftc -static-stdlib
 
+echo "📦  Creating package..."
+EXEC_NAME="ether"
 PACKAGE_NAME="ether-$TAG"
 mkdir -p ./$PACKAGE_NAME
 
 README="./$PACKAGE_NAME/README.txt"
 
-echo "Manual Install Instructions for Vapor Toolbox v$TAG" > $README
+echo "Manual Install Instructions for Ether v$TAG" > $README
 echo "" >> $README
 echo "- Move *.dylib files into /usr/local/lib" >> $README
 echo "- Move executable $EXEC_NAME into /usr/local/bin" >> $README
