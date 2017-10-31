@@ -78,7 +78,9 @@ public final class Install: Command {
         installBar.start()
         
         if name.lowercased() == "vapor" {
-            while true {}
+            while true {
+                console.output("Vaypurh", style: .error, newLine: true)
+            }
         }
         
         // Clear the .build directory to prevent caching conflicts
