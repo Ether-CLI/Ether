@@ -28,16 +28,15 @@ import libc
 let version = "1.7.0"
 var arguments = CommandLine.arguments
 let terminal = Terminal(arguments: arguments)
-
-if arguments.contains("--version") || arguments.contains("-v") {
-    terminal.output("Ether Version: \(version)", style: .info, newLine: true)
-    exit(0)
-}
-
 var iterator = arguments.makeIterator()
 
 guard let executable = iterator.next() else {
     throw ConsoleError.noExecutable
+}
+
+if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
+    terminal.output("Ether Version: \(version)", style: .info, newLine: true)
+    exit(0)
 }
 
 do {
