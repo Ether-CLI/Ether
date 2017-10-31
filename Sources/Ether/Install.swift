@@ -77,12 +77,6 @@ public final class Install: Command {
         
         installBar.start()
         
-        if name.lowercased() == "vapor" {
-            while true {
-                console.output("Vaypurh", style: .error, newLine: true)
-            }
-        }
-        
         // Clear the .build directory to prevent caching conflicts
         _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
         
