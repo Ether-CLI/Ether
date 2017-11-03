@@ -113,7 +113,7 @@ public final class Install: Command {
         // Write the Package.swift file again
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
-        _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         
         // Calculate the number of package that where installed and output it.
         guard let oldObject = packageData?["object"] as? JSON,
