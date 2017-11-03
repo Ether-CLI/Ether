@@ -66,10 +66,8 @@ public final class Remove: Command {
         
         do {
             try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-            _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         } catch let error {
             removingProgressBar.fail()
             throw error
