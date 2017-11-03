@@ -21,6 +21,8 @@
 // SOFTWARE.
 
 import Foundation
+import Console
+import Bits
 
 public class Manifest {
     public static let current = Manifest()
@@ -42,6 +44,18 @@ public class Manifest {
         }
         
         return try String(contentsOf: resolvedURL)
+    }
+    
+    /// Gets the package manifest data in JSON format.
+    ///
+    /// - Parameter console: The `ConsoleProtocol` instance to use to run `swift package dump-package`.
+    /// - Returns: The JSON data representing the package manifest.
+    /// - Throws: `EtherError.fail` if the data returned from the command cannot be converted to JSON.
+    public func getJSON(withConsole console: ConsoleProtocol)throws -> JSON {
+        guard let json = try (console.backgroundExecute(program: "swift", arguments: ["package", "dump-package"]) as Data).json() else {
+            throw EtherError.fail("Unable to convert package data to JSON")
+        }
+        return json
     }
     
     /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
