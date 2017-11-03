@@ -54,6 +54,15 @@
           "revision": "642f357d08ec5aa335ae2e3c4633c72da7b5a0c4",
           "version": "2.1.1"
         }
+      },
+      {
+        "package": "Retry",
+        "repositoryURL": "https://github.com/calebkleveter/Retry.git",
+        "state": {
+          "branch": null,
+          "revision": "6281ea5678335498980a9a0c7e5ed27d5b4ba42b",
+          "version": "0.2.1"
+        }
       }
     ]
   },
