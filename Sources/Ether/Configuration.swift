@@ -38,6 +38,11 @@ public class Configuration: Command {
         ])
     ]
     
+    public let help: [String] = [
+        "Configure custom actions to occure when a command is run",
+        "Run `config help` to get information on expected data for the command options"
+    ]
+    
     public let console: ConsoleProtocol
     
     public init(console: ConsoleProtocol) {
@@ -55,7 +60,7 @@ public class Configuration: Command {
         do {
             val = try value("value", from: arguments)
         } catch {
-            if key == "help" { self.help() }
+            if key == "help" { printHelp() }
             return
         }
         
@@ -75,7 +80,7 @@ public class Configuration: Command {
         setBar.finish()
     }
     
-    fileprivate func help() {
+    fileprivate func printHelp() {
         let help = """
         Below are the keys, values, and expected types for the configuration JSON.
 
