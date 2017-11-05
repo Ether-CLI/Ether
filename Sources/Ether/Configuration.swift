@@ -42,3 +42,7 @@ public class Configuration: Command {
     
     public func run(arguments: [String]) throws {}
 }
+
+fileprivate enum ConfigurationKey {
+    
+}
