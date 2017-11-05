@@ -44,5 +44,9 @@ public class Configuration: Command {
 }
 
 fileprivate enum ConfigurationKey {
-    
+    var jsonPath: [String] {
+        switch self {
+        default: return []
+        }
+    }
 }
