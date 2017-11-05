@@ -82,7 +82,7 @@ public final class New: Command {
             
             if #available(OSX 10.12, *) {
                 let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
-                let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".characters.dropFirst(7))
+                let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".dropFirst(7))
                 let current = manager.currentDirectoryPath
                 shell(command: "/bin/cp", "-a", "\(templatePath)", "\(current)/\(name)")
             } else {
