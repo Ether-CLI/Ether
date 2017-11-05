@@ -20,7 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Foundation
 import Console
+import Helpers
+import JSON
 
 public class Configuration: Command {
     public let id: String = "config"
@@ -41,7 +44,61 @@ public class Configuration: Command {
         self.console = console
     }
     
-    public func run(arguments: [String]) throws {}
+    public func run(arguments: [String]) throws {
+        let setBar = console.loadingBar(title: "Setting Configuration Key")
+        setBar.start()
+        
+        let fileManager = FileManager.default
+        let key = try value("key", from: arguments)
+        let val = try value("value", from: arguments)
+        
+        guard let jsonPath = ConfigurationKey.getKey(from: key)?.jsonPath else {
+            throw fail(bar: setBar, with: "Unable to get JSON path for specified key")
+        }
+        guard let configURL = URL(string: "file:\(fileManager.currentDirectoryPath)\(configPath)") else {
+            throw fail(bar: setBar, with: "Unable to create path to config file")
+        }
+        
+        let jsonData = try Data(contentsOf: configURL).makeBytes()
+        var json = try JSON(bytes: jsonData)
+        try self.set(jsonPath, with: val, in: &json)
+        
+        try Data(bytes: json.makeBytes()).write(to: configURL)
+        
+        setBar.finish()
+    }
+    
+    fileprivate func set(_ path: [String], with val: Any?, `in` json: inout JSON)throws {
+        var jsons: [(key: String, json: JSON)] = []
+        var top: JSON = JSON()
+        var sub: JSON = JSON()
+        
+        if path.count < 1 { return }
+        for key in path {
+            try jsons.append((key: key, json: json.get(key)))
+        }
+        if jsons.count == 0 { return }
+        else if jsons.count == 1 {
+            top = jsons[0].json
+            try top.set(path[0], val)
+            json = top
+            return
+        }
+        
+        for index in Array(0...jsons.count-1).reversed() {
+            sub = jsons[index].json
+            
+            if index == jsons.count-1 {
+                // Force-unwrapping always succedes because we tested for the path count earlier.
+                try sub.set(path.last!, val)
+            } else if index > 0 {
+                top = jsons[index].json
+                try top.set(jsons[index].key, sub)
+            } else {
+                json = top
+            }
+        }
+    }
 }
 
 fileprivate enum ConfigurationKey {
