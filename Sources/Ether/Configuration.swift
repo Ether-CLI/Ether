@@ -105,12 +105,14 @@ fileprivate enum ConfigurationKey {
     case useGit
     case gitInstallMessage
     case gitRemoveMessage
+    case gitLatestMessage
     
     var jsonPath: [String] {
         switch self {
         case .useGit: return ["git", "use"]
         case .gitInstallMessage: return ["git", "commit-messages", "install"]
         case .gitRemoveMessage: return ["git", "commit-message", "remove"]
+        case .gitLatestMessage: return ["git", "commit-message", "version-latest"]
         }
     }
     
@@ -119,6 +121,7 @@ fileprivate enum ConfigurationKey {
         case "use-git": return .useGit
         case "install-commit": return .gitInstallMessage
         case "remove-commit": return .gitRemoveMessage
+        case "latest-commit": return .gitLatestMessage
         default: return nil
         }
     }
