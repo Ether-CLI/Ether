@@ -41,5 +41,20 @@ public class FixInstall: Command {
         self.console = console
     }
     
-    public func run(arguments: [String]) throws {}
+    public func run(arguments: [String]) throws {
+        let fixBar = console.loadingBar(title: "Fixing Installation")
+        
+        console.output("This may take some time...", style: .info, newLine: true)
+        fixBar.start()
+        
+        _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        
+        if arguments.option("no-build") == nil {
+            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
+        }
+        
+        fixBar.finish()
+    }
 }
