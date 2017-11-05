@@ -50,7 +50,14 @@ public class Configuration: Command {
         
         let fileManager = FileManager.default
         let key = try value("key", from: arguments)
-        let val = try value("value", from: arguments)
+        let val: String
+        
+        do {
+            val = try value("value", from: arguments)
+        } catch {
+            if key == "help" { self.help() }
+            return
+        }
         
         guard let jsonPath = ConfigurationKey.getKey(from: key)?.jsonPath else {
             throw fail(bar: setBar, with: "Unable to get JSON path for specified key")
@@ -66,6 +73,33 @@ public class Configuration: Command {
         try Data(bytes: json.makeBytes()).write(to: configURL)
         
         setBar.finish()
+    }
+    
+    fileprivate func help() {
+        let help = """
+        Below are the keys, values, and expected types for the configuration JSON.
+
+        id |      key       | value-type |                       description
+        ---+----------------+------------+-------------------------------------------------------------
+         0 |     use-git    |    Bool    | Wheather to run git commands when a project is written to
+         1 | install-commit |   String   | The message to use when committing after an installation
+         2 |  remove-commit |   String   | The message to use when committing after a package removal
+         3 |  latest-commit |   String   | The message to use when all packages are updated to their
+           |                |            | latest versions
+         4 |    new-commit  |   String   | The message to use when committing a newly generated project
+
+        When a commit is made, there are variables that can be replaced for more specific messages.
+        Below are the variables, their values, and the config ID that they belong to:
+
+        id | var |    description
+        ---+-----+--------------------
+         1 | $0  | The package name
+         1 | $1  | The package version
+         2 | $0  | The package name
+         4 | $0  | The project name
+         4 | $1  | The package type
+        """
+        console.output(help, style: .plain, newLine: true)
     }
     
     fileprivate func set(_ path: [String], with val: Any?, `in` json: inout JSON)throws {
