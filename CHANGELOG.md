@@ -1,3 +1,8 @@
+## [1.8.0] - 2017-11-4
+
+### Added
+- `ether fix-install` to replace automatic cache clearing, which can make the install process take an extended amount of time.
+
 ## [1.7.0] - 2017-09-18
 
 ### Added
