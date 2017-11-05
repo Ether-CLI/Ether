@@ -25,6 +25,15 @@ import Console
 public class Configuration: Command {
     public let id: String = "config"
     
+    public let signature: [Argument] = [
+       Value(name: "key", help: [
+            "The configuration JSON key to set"
+        ]),
+       Value(name: "value", help: [
+            "The new value for the key passed in"
+        ])
+    ]
+    
     public let console: ConsoleProtocol
     
     public init(console: ConsoleProtocol) {
