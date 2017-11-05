@@ -82,7 +82,7 @@ public final class Update: Command {
       ]
 
       for line in console.center(etherArt) {
-            for character in line.characters {
+            for character in line {
                 let style: ConsoleStyle
 
                 if let color = characterColors[character] {
