@@ -45,7 +45,7 @@ public final class Update: Command {
         if let _ = arguments.option("self") {
             let updateBar = console.loadingBar(title: "Updating Ether")
             updateBar.start()
-            _ = try console.backgroundExecute(program: "/bin/sh", arguments: ["-c", "curl https://gist.githubusercontent.com/calebkleveter/2e5490c76df227c510035515a49f9f01/raw/49421e072653314160bfe1c506b553805d150cb6/EatherInstall.sh | bash"])
+            _ = try console.backgroundExecute(program: "/bin/sh", arguments: ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
             updateBar.finish()
             self.printEtherArt()
         } else {
