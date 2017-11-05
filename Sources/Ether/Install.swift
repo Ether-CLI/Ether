@@ -77,9 +77,6 @@ public final class Install: Command {
         
         installBar.start()
         
-        // Clear the .build directory to prevent caching conflicts
-        _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-        
         let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\)),?(?:\\R?)", options: .anchorsMatchLines)
         let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
         
