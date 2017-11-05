@@ -104,11 +104,13 @@ public class Configuration: Command {
 fileprivate enum ConfigurationKey {
     case useGit
     case gitInstallMessage
+    case gitRemoveMessage
     
     var jsonPath: [String] {
         switch self {
         case .useGit: return ["git", "use"]
         case .gitInstallMessage: return ["git", "commit-messages", "install"]
+        case .gitRemoveMessage: return ["git", "commit-message", "remove"]
         }
     }
     
@@ -116,6 +118,7 @@ fileprivate enum ConfigurationKey {
         switch string.lowercased() {
         case "use-git": return .useGit
         case "install-commit": return .gitInstallMessage
+        case "remove-commit": return .gitRemoveMessage
         default: return nil
         }
     }
