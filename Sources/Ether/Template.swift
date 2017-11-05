@@ -65,7 +65,7 @@ final public class Template: Command {
         if #available(OSX 10.12, *) {
             var isDir : ObjCBool = true
             let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
-            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".characters.dropFirst(7))
+            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".dropFirst(7))
             let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
             
             if removeTemplate {
