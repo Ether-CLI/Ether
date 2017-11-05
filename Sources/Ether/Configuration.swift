@@ -115,11 +115,7 @@ fileprivate enum ConfigurationKey {
     static func getKey(from string: String) -> ConfigurationKey? {
         switch string.lowercased() {
         case "use-git": return .useGit
-        case "usegit": return .useGit
-        case "git-install": return .gitInstallMessage
-        case "gitinstall": return .gitInstallMessage
-        case "gitinstallmessage": return .gitInstallMessage
-        case "git-install-message": return .gitInstallMessage
+        case "install-commit": return .gitInstallMessage
         default: return nil
         }
     }
