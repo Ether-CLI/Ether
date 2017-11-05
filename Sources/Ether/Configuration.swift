@@ -49,7 +49,6 @@ fileprivate enum ConfigurationKey {
     var jsonPath: [String] {
         switch self {
         case .useGit: return ["git", "use"]
-        default: return []
         }
     }
     
