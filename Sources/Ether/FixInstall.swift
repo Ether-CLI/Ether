@@ -27,7 +27,9 @@ public class FixInstall: Command {
     
     public let signature: [Argument] = []
     
-    public var help: [String] = []
+    public var help: [String] = [
+        "Fixes fetching errors that occur during package install"
+    ]
     
     public let console: ConsoleProtocol
     
