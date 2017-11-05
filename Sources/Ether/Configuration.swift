@@ -24,6 +24,7 @@ import Console
 
 public class Configuration: Command {
     public let id: String = "config"
+    public let configPath = "/Library/Application Support/Ether/config.json"
     
     public let signature: [Argument] = [
        Value(name: "key", help: [
