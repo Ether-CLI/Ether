@@ -52,4 +52,12 @@ fileprivate enum ConfigurationKey {
         default: return []
         }
     }
+    
+    static func getKey(from string: String) -> ConfigurationKey? {
+        switch string.lowercased() {
+        case "use-git": return .useGit
+        case "usegit": return .useGit
+        default: return nil
+        }
+    }
 }
