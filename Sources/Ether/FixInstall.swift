@@ -25,7 +25,11 @@ import Console
 public class FixInstall: Command {
     public let id: String = "fix-install"
     
-    public let signature: [Argument] = []
+    public let signature: [Argument] = [
+        Option(name: "no-build", help: [
+            "Skips the rebuilding proccess after clearing the project cache"
+        ])
+    ]
     
     public var help: [String] = [
         "Fixes fetching errors that occur during package install"
