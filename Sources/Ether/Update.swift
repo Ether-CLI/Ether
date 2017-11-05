@@ -49,6 +49,8 @@ public final class Update: Command {
             updateBar.finish()
             self.printEtherArt()
         } else {
+            console.output("This may take some time...", style: .info, newLine: true)
+            
             let updateBar = console.loadingBar(title: "Updating Packages")
             updateBar.start()
             _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
