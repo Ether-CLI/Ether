@@ -113,12 +113,12 @@ public final class Install: Command {
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         
         // Calculate the number of package that where installed and output it.
-        guard let oldObject = packageData?["object"] as? JSON,
-              let oldPins = oldObject["pins"] as? [JSON] else { return }
+        guard let oldObject = packageData?["object"] as? APIJSON,
+              let oldPins = oldObject["pins"] as? [APIJSON] else { return }
         
         packageData = try Data(contentsOf: resolvedURL).json()
-        guard let object = packageData?["object"] as? JSON,
-              let pins = object["pins"] as? [JSON] else { return }
+        guard let object = packageData?["object"] as? APIJSON,
+              let pins = object["pins"] as? [APIJSON] else { return }
         
         let newPackageCount = pins.count - oldPins.count
         

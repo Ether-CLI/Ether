@@ -80,12 +80,12 @@ public final class Search: Command {
         
         let json = try self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults])
         
-        guard let data = json["data"] as? JSON else { throw fail("Bad JSON key") }
-        guard let hits = data["hits"] as? JSON else { throw fail("Bad JSON key") }
-        guard let results = hits["hits"] as? [JSON] else { throw fail("Bad JSON key") }
+        guard let data = json["data"] as? APIJSON else { throw fail("Bad JSON key") }
+        guard let hits = data["hits"] as? APIJSON else { throw fail("Bad JSON key") }
+        guard let results = hits["hits"] as? [APIJSON] else { throw fail("Bad JSON key") }
         
         packages = try results.map { (result) -> (name: String?, description: String?) in
-            guard let source = result["_source"] as? JSON else { throw fail("Bad JSON key") }
+            guard let source = result["_source"] as? APIJSON else { throw fail("Bad JSON key") }
             return (name: source["package_full_name"] as? String, description: source["description"] as? String)
         }
         

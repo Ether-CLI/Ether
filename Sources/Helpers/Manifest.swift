@@ -51,7 +51,7 @@ public class Manifest {
     /// - Parameter console: The `ConsoleProtocol` instance to use to run `swift package dump-package`.
     /// - Returns: The JSON data representing the package manifest.
     /// - Throws: `EtherError.fail` if the data returned from the command cannot be converted to JSON.
-    public func getJSON(withConsole console: ConsoleProtocol)throws -> JSON {
+    public func getJSON(withConsole console: ConsoleProtocol)throws -> APIJSON {
         guard let json = try (console.backgroundExecute(program: "swift", arguments: ["package", "dump-package"]) as Data).json() else {
             throw EtherError.fail("Unable to convert package data to JSON")
         }
@@ -69,8 +69,8 @@ public class Manifest {
         }
         let packageData = try Data(contentsOf: resolvedURL).json()
         
-        guard let object = packageData?["object"] as? JSON,
-            let pins = object["pins"] as? [JSON] else { throw EtherError.fail("Unable to read Package.resolved") }
+        guard let object = packageData?["object"] as? APIJSON,
+            let pins = object["pins"] as? [APIJSON] else { throw EtherError.fail("Unable to read Package.resolved") }
         
         guard let package = try pins.filter({ (json) -> Bool in
             guard let repoURL = json["repositoryURL"] as? String else {
@@ -99,8 +99,8 @@ public class Manifest {
         }
         let packageData = try Data(contentsOf: resolvedURL).json()
         
-        guard let object = packageData?["object"] as? JSON,
-            let pins = object["pins"] as? [JSON] else { throw EtherError.fail("Unable to read Package.resolved") }
+        guard let object = packageData?["object"] as? APIJSON,
+            let pins = object["pins"] as? [APIJSON] else { throw EtherError.fail("Unable to read Package.resolved") }
         
         guard let package = try pins.filter({ (json) -> Bool in
             guard let repoURL = json["package"] as? String else {
@@ -143,14 +143,14 @@ public class Manifest {
     ///
     /// - Returns: The projects package pins.
     /// - Throws: An Ether error if a `Package.resolved` file is not found, or the JSON it contains is malformed.
-    public func getPins()throws -> [JSON] {
+    public func getPins()throws -> [APIJSON] {
         guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
             throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
         }
         let packageData = try Data(contentsOf: resolvedURL).json()
         
-        guard let object = packageData?["object"] as? JSON,
-              let pins = object["pins"] as? [JSON] else {
+        guard let object = packageData?["object"] as? APIJSON,
+              let pins = object["pins"] as? [APIJSON] else {
                 throw EtherError.fail("Unable to read Package.resolved")
         }
         
@@ -179,10 +179,10 @@ public class Manifest {
         } else {
             let clientUrl = "https://packagecatalog.com/api/search/\(name)"
             let json = try client.get(from: clientUrl, withParameters: ["items": "1", "chart": "moststarred"])
-            guard let data = json["data"] as? JSON,
-                let hits = data["hits"] as? JSON,
-                let results = hits["hits"] as? [JSON],
-                let source = results[0]["_source"] as? JSON else {
+            guard let data = json["data"] as? APIJSON,
+                let hits = data["hits"] as? APIJSON,
+                let results = hits["hits"] as? [APIJSON],
+                let source = results[0]["_source"] as? APIJSON else {
                     throw EtherError.fail("Bad JSON")
             }
             

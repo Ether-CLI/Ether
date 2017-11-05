@@ -45,12 +45,12 @@ public final class PackageJSONFetcher: APIClient {
     ///   - urlString: The URL the data will be fetched from.
     ///   - parameters: The URL's parameters.
     ///   - completion: The completion handler where either the JSON or Error can be accessed.
-    public func get(from urlString: String, withParameters parameters: [String: String], _ completion: @escaping (JSON?, Error?)->()) {
+    public func get(from urlString: String, withParameters parameters: [String: String], _ completion: @escaping (APIJSON?, Error?)->()) {
         let parameterString = parameters.map({ return "\($0)=\($1)"}).joined(separator:"&")
         if let url = URL(string: urlString + "?" + parameterString) {
             let request = URLRequest(url: url)
             do {
-                let (json, error) = try Portal<(JSON?,Error?)>.open({ (portal) in
+                let (json, error) = try Portal<(APIJSON?,Error?)>.open({ (portal) in
                     self.dataTask(with: request, endingWith: { (json, reponse, error) in
                         portal.close(with: (json, error))
                     }).resume()
@@ -67,8 +67,8 @@ public final class PackageJSONFetcher: APIClient {
     ///   - parameters: The paramters for the URL.
     /// - Returns: The JSON is returned from the network request.
     /// - Throws: Any errors that occur in the Portal or in the network request.
-    public func get(from url: String, withParameters parameters: [String: String])throws -> JSON {
-        let requestResult = try Portal<(JSON?,Error?)>.open({ (portal) in
+    public func get(from url: String, withParameters parameters: [String: String])throws -> APIJSON {
+        let requestResult = try Portal<(APIJSON?,Error?)>.open({ (portal) in
             self.get(from: url, withParameters: parameters, { (json, error) in portal.close(with: (json,error)) })
         })
         if let error = requestResult.1 { throw error }

@@ -26,8 +26,8 @@ import Core
 public let CKNetworkingErrorDomain = "com.caleb-kleveter.Ether.NetworkingError"
 public let MissingHTTPResponseError: Int = 0
 
-public typealias JSON = [String: AnyObject]
-public typealias FetchCompletion = (JSON?, HTTPURLResponse?, DataTaskError?) -> Void
+public typealias APIJSON = [String: AnyObject]
+public typealias FetchCompletion = (APIJSON?, HTTPURLResponse?, DataTaskError?) -> Void
 
 public enum DataTaskError: Error {
     case badStatusCode(Int)
@@ -39,7 +39,7 @@ public enum DataTaskError: Error {
 }
 
 public protocol JSONInitable {
-    init(json: JSON)
+    init(json: APIJSON)
 }
 
 public protocol APIClient {
@@ -68,7 +68,7 @@ extension APIClient {
                     if error == nil {
                         if data != nil {
                             do {
-                                let json = try JSONSerialization.jsonObject(with: data!, options: []) as? JSON
+                                let json = try JSONSerialization.jsonObject(with: data!, options: []) as? APIJSON
                                 if let json = json {
                                     completion(json, resp, nil)
                                 } else {
