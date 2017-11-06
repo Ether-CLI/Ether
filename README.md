@@ -1,4 +1,8 @@
-<center>[![Ether Logo](https://raw.githubusercontent.com/calebkleveter/Ether/master/logo.png)](https://raw.githubusercontent.com/calebkleveter/Ether/master/assets/ether.png)</center>
+<center>
+
+[![Ether Logo](https://github.com/calebkleveter/Ether/blob/master/assets/ether.png?raw=true)](https://github.com/calebkleveter/Ether/blob/master/assets/ether.png?raw=true)
+
+</center>
 
 # Ether
 
