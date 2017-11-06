@@ -99,7 +99,6 @@ public final class Install: Command {
         
         // Update the packages.
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
         
         // Get the new package name and add it to the previously accepted targets.
         let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
