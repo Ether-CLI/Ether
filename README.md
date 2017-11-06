@@ -15,7 +15,7 @@ You can see a whole list of the available commands [here](https://github.com/cal
 With Homebrew:
 
 ```bash
-brew tap calebkleveter/homebrew-ether
+brew tap calebkleveter/tap/ether
 brew install ether
 ```
 
