@@ -26,7 +26,7 @@ public final class Update: Command {
     public let id = "update"
 
     public let signature: [Argument] = [
-        Option(name: "self", help: [
+        Option(name: "self", short: "s", help: [
             "Updates Ether"
         ])
     ]
