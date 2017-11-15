@@ -33,10 +33,10 @@ public final class Install: Command {
         Value(name: "name", help: [
             "The name of the package that will be installed"
         ]),
-        Option(name: "url", help: [
+        Option(name: "url", short: "u", help: [
             "The URL for the package"
         ]),
-        Option(name: "version", help: [
+        Option(name: "version", short: "v", help: [
             "The desired version for the package",
             "This defaults to the latest version"
         ])
