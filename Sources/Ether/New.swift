@@ -35,10 +35,10 @@ public final class New: Command {
         Value(name: "name", help: [
             "The name of the new project"
         ]),
-        Option(name: "executable", help: [
+        Option(name: "executable", short: "e", help: [
             "Creates an executable SPM project"
         ]),
-        Option(name: "package", help: [
+        Option(name: "package", short: "p", help: [
             "Creates an SPM package"
         ]),
         Option(name: "template", help: [
