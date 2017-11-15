@@ -34,6 +34,9 @@ public final class Remove: Command {
     public var signature: [Argument] = [
         Value(name: "name", help: [
             "The name of the package that will be removed"
+        ]),
+        Option(name: "xcode", short: "x", help: [
+            "Regenerate the Xcode project after removing the package"
         ])
     ]
     
@@ -45,6 +48,7 @@ public final class Remove: Command {
     
     public func run(arguments: [String]) throws {
         let removingProgressBar = console.loadingBar(title: "Removing Dependency")
+        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         removingProgressBar.start()
         
         let manager = FileManager.default
@@ -77,6 +81,13 @@ public final class Remove: Command {
         let pinsCount = oldPins.count - pins.count
         
         removingProgressBar.finish()
+        
+        if let _ = arguments.options["xcode"] {
+            xcodeBar.start()
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            xcodeBar.finish()
+        }
+        
         console.output("📦  \(pinsCount) packages removed", style: .custom(.white), newLine: true)
     }
 }
