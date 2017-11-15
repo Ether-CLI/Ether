@@ -54,9 +54,9 @@ public final class Update: Command {
             let updateBar = console.loadingBar(title: "Updating Packages")
             updateBar.start()
             _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["build", "--enable-prefetching"])
             updateBar.finish()
         }
     }
