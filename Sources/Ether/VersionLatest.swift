@@ -35,7 +35,11 @@ public final class VersionLatest: Command {
         "Updates all packeges to the latest version"
     ]
     
-    public var signature: [Argument] = []
+    public var signature: [Argument] = [
+        Option(name: "xcode", short: "x", help: [
+            "Regenerate Xcode project after updating package versions"
+        ])
+    ]
     
     public let console: ConsoleProtocol
     public let client = PackageJSONFetcher()
@@ -46,6 +50,7 @@ public final class VersionLatest: Command {
     
     public func run(arguments: [String]) throws {
         let updateBar = console.loadingBar(title: "Updating Package Versions")
+        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         updateBar.start()
         
         let fileManager = FileManager.default
@@ -72,5 +77,11 @@ public final class VersionLatest: Command {
         _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
         
         updateBar.finish()
+        
+        if let _ = arguments.options["xcode"] {
+            xcodeBar.start()
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            xcodeBar.finish()
+        }
     }
 }
