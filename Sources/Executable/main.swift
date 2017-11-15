@@ -25,7 +25,7 @@ import Ether
 import libc
 
 // The current version of Ether. This string should be updated with each release.
-let version = "1.8.0"
+let version = "1.9.0"
 var arguments = CommandLine.arguments
 let terminal = Terminal(arguments: arguments)
 var iterator = arguments.makeIterator()
