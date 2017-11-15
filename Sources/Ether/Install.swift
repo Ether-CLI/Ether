@@ -125,13 +125,13 @@ public final class Install: Command {
         let newPackageCount = pins.count - oldPins.count
         
         installBar.finish()
-        xcodeBar.start()
         
         if let _ = arguments.options["xcode"] {
+            xcodeBar.start()
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            xcodeBar.finish()
         }
         
-        xcodeBar.finish()
         console.output("📦  \(newPackageCount) packages installed", style: .plain, newLine: true)
     }
     
