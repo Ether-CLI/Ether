@@ -39,6 +39,9 @@ public final class Install: Command {
         Option(name: "version", short: "v", help: [
             "The desired version for the package",
             "This defaults to the latest version"
+        ]),
+        Option(name: "xcode", short: "x", help: [
+            "Regenerate the Xcode project after the install is complete"
         ])
     ]
     
@@ -59,6 +62,7 @@ public final class Install: Command {
         let fileManager = FileManager.default
         let name = try value("name", from: arguments)
         let installBar = console.loadingBar(title: "Installing Dependency")
+        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         
         // Get package manifest and JSON data
         guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
@@ -98,7 +102,8 @@ public final class Install: Command {
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
         // Update the packages.
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
         
         // Get the new package name and add it to the previously accepted targets.
         let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
@@ -109,19 +114,24 @@ public final class Install: Command {
         // Write the Package.swift file again
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        
         // Calculate the number of package that where installed and output it.
         guard let oldObject = packageData?["object"] as? APIJSON,
-              let oldPins = oldObject["pins"] as? [APIJSON] else { return }
+            let oldPins = oldObject["pins"] as? [APIJSON] else { return }
         
         packageData = try Data(contentsOf: resolvedURL).json()
         guard let object = packageData?["object"] as? APIJSON,
-              let pins = object["pins"] as? [APIJSON] else { return }
+            let pins = object["pins"] as? [APIJSON] else { return }
         
         let newPackageCount = pins.count - oldPins.count
         
         installBar.finish()
+        xcodeBar.start()
+        
+        if let _ = arguments.options["xcode"] {
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+        }
+        
+        xcodeBar.finish()
         console.output("📦  \(newPackageCount) packages installed", style: .plain, newLine: true)
     }
     
