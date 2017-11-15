@@ -38,3 +38,4 @@ done
 
 rm -rf macOS-sierra.tar.gz
 rm -rf $PACKAGE_NAME
+rm install
