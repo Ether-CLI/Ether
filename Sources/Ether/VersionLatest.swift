@@ -68,8 +68,8 @@ public final class VersionLatest: Command {
         }
         
         try String(nsManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
         
         updateBar.finish()
     }
