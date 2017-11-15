@@ -35,9 +35,9 @@ final public class Template: Command {
             "The name used to identify the template"
         ]),
         Option(name: "github", help: [
-            "Creates a GitHub repo and pushes the template to it."
+            "Creates a GitHub repo and pushes the template to it (Un-implimented)"
         ]),
-        Option(name: "remove", help: [
+        Option(name: "remove", short: "r", help: [
             "Deletes the template"
         ])
     ]
