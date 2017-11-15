@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/vapor/console.git",
         "state": {
           "branch": null,
-          "revision": "11c0694857d1be6c7b8b30d8db8b1162b73f2a2b",
-          "version": "2.2.0"
+          "revision": "df9eb9a6afd03851abcb3d8204d04c368729776e",
+          "version": "2.3.0"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "b8330808f4f6b69941961afe8ad6b015562f7b7c",
-          "version": "2.1.2"
+          "revision": "f9f3a585ab0ea5764b46d7a36d9c0d9d508b9c63",
+          "version": "2.2.0"
         }
       },
       {
