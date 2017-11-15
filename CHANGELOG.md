@@ -1,3 +1,10 @@
+## [1.9.0] 2017-11-15
+
+### Added
+- Short flag options for some command's flags.
+- Pre-fetching when updating packages.
+- Xcode regeneration options.
+
 ## [1.8.0] - 2017-11-4
 
 ### Added
