@@ -71,12 +71,6 @@ public final class Update: Command {
         """
 
         let characterColors: [Character: ConsoleColor] = [
-            "/": .cyan,
-            "=": .cyan,
-            "_": .cyan,
-            "|": .cyan,
-            "\\": .cyan,
-            "~": .green,
             "•": .green
         ]
 
