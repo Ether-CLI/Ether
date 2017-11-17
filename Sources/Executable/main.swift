@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Foundation
 import Console
 import Ether
 import libc
@@ -39,6 +40,11 @@ if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
     exit(0)
 }
 
+let date = Date()
+let formatter = DateFormatter()
+formatter.dateFormat = "YYYY"
+let currentYear = formatter.string(from: date)
+
 do {
     try terminal.run(executable: executable, commands: [
         Search(console: terminal),
@@ -54,7 +60,7 @@ do {
         ], help: ["For interacting with dependency versions"]),
     ], arguments: Array(iterator),
     help: [
-        "MIT 2017 Caleb Kleveter.",
+        "MIT \(currentYear) Caleb Kleveter.",
         "If you are getting errors, open an issue on GitHub.",
         "If you want to help, submit a PR."
     ])
