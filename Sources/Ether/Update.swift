@@ -28,6 +28,9 @@ public final class Update: Command {
     public let signature: [Argument] = [
         Option(name: "self", short: "s", help: [
             "Updates Ether"
+        ]),
+        Option(name: "xcode", short: "x", help: [
+            "Regenerate and open the Xcode project after update its packages"
         ])
     ]
 
@@ -58,6 +61,14 @@ public final class Update: Command {
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
             _ = try console.backgroundExecute(program: "swift", arguments: ["build", "--enable-prefetching"])
             updateBar.finish()
+            
+            if let _ = arguments.options["xcode"] {
+                let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
+                xcodeBar.start()
+                _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+                xcodeBar.finish()
+                try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+            }
         }
     }
 
