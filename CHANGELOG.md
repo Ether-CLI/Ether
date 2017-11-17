@@ -1,3 +1,9 @@
+## [1.9.1] 2017-11-17
+
+### Fixed
+- Xcode regeneration bar does not run if the xcode flag was not passed in.
+- Xcode projects are now opened if the xcode flag is passed into a command.
+
 ## [1.9.0] 2017-11-15
 
 ### Added
