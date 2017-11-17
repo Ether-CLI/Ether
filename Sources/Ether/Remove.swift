@@ -86,6 +86,7 @@ public final class Remove: Command {
             xcodeBar.start()
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
             xcodeBar.finish()
+            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
         }
         
         console.output("📦  \(pinsCount) packages removed", style: .custom(.white), newLine: true)
