@@ -62,7 +62,6 @@ public final class Install: Command {
         let fileManager = FileManager.default
         let name = try value("name", from: arguments)
         let installBar = console.loadingBar(title: "Installing Dependency")
-        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         
         // Get package manifest and JSON data
         guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
@@ -127,6 +126,7 @@ public final class Install: Command {
         installBar.finish()
         
         if let _ = arguments.options["xcode"] {
+            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
             xcodeBar.finish()

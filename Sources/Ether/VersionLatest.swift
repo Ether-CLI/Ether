@@ -50,7 +50,6 @@ public final class VersionLatest: Command {
     
     public func run(arguments: [String]) throws {
         let updateBar = console.loadingBar(title: "Updating Package Versions")
-        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         updateBar.start()
         
         let fileManager = FileManager.default
@@ -79,6 +78,7 @@ public final class VersionLatest: Command {
         updateBar.finish()
         
         if let _ = arguments.options["xcode"] {
+            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
             xcodeBar.finish()

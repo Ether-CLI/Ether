@@ -48,7 +48,6 @@ public final class Remove: Command {
     
     public func run(arguments: [String]) throws {
         let removingProgressBar = console.loadingBar(title: "Removing Dependency")
-        let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
         removingProgressBar.start()
         
         let manager = FileManager.default
@@ -83,6 +82,7 @@ public final class Remove: Command {
         removingProgressBar.finish()
         
         if let _ = arguments.options["xcode"] {
+            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
             _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
             xcodeBar.finish()
