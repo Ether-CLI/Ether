@@ -47,6 +47,7 @@ let currentYear = formatter.string(from: date)
 
 do {
     try terminal.run(executable: executable, commands: [
+        CleanManifest(console: terminal),
         Search(console: terminal),
         Install(console: terminal),
         Update(console: terminal),
