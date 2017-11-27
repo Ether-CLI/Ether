@@ -24,6 +24,7 @@ echo "- Type '$EXEC_NAME --help' into terminal to verify installation" >> $READM
 cp .build/release/Executable ./$PACKAGE_NAME/$EXEC_NAME
 
 tar -cvzf macOS-sierra.tar.gz ./$PACKAGE_NAME
+HASH=$(shasum -a 256 macOS-sierra.tar.gz | cut -d " " -f 1)
 
 echo "📦  Drag and drop $PWD/macOS-sierra.tar.gz into https://github.com/vapor/toolbox/releases/edit/$TAG"
 
@@ -36,6 +37,7 @@ while true; do
     esac
 done
 
+echo "The new hash for the formula is $HASH"
 rm -rf macOS-sierra.tar.gz
 rm -rf $PACKAGE_NAME
 rm install
