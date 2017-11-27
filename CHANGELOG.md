@@ -1,3 +1,8 @@
+## [1.9.2] 2017-11-27
+
+### Fixed
+- The first installation of a dependency in a project no longer breaks the manifest file with bad code injection.
+
 ## [1.9.1] 2017-11-17
 
 ### Fixed
