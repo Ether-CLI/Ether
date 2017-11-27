@@ -47,7 +47,7 @@ formatter.dateFormat = "YYYY"
 let currentYear = formatter.string(from: date)
 
 do {
-    try terminal.run(executable: executable, commands: [
+    let commands: [Runnable] = [
         Search(console: terminal),
         Install(console: terminal),
         Update(console: terminal),
@@ -58,10 +58,11 @@ do {
         Group(id: "version", commands: [
             VersionLatest(console: terminal),
             VersionAll(console: terminal)
-        ], help: ["For interacting with dependency versions"]),
-        CleanManifest(console: terminal)
-    ], arguments: Array(iterator),
-    help: [
+            ], help: ["For interacting with dependency versions"]),
+        CleanManifest(console: terminal)   
+    ]
+    
+    try terminal.run(executable: executable, commands: commands, arguments: Array(iterator), help: [
         "MIT \(currentYear) Caleb Kleveter.",
         "If you are getting errors, open an issue on GitHub.",
         "If you want to help, submit a PR."
