@@ -187,13 +187,19 @@ public class Manifest {
             if comment.matches(in: line, options: [], range: NSMakeRange(0, line.count)).count > 0 {
                 lineIndex += 1
             } else if collapse.matches(in: line, options: [], range: NSMakeRange(0, line.count)).count > 0 {
-                currentLine = lines[lineIndex]
+                currentLine = ""
                 while !line.contains(")") {
-                    currentLine.append(line)
+                    if currentLine.last != nil, currentLine.last! == "(" {
+                        currentLine.append(line.trim())
+                    } else if currentLine == "" {
+                        currentLine.append(line)
+                    } else {
+                        currentLine.append(" " + line.trim())
+                    }
                     lineIndex += 1
                     line = lines[lineIndex]
                 }
-                currentLine.append(line)
+                currentLine.append(" " + line.trim())
                 lineIndex += 1
                 line = lines[lineIndex]
                 
