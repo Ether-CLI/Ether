@@ -48,7 +48,6 @@ let currentYear = formatter.string(from: date)
 
 do {
     try terminal.run(executable: executable, commands: [
-        CleanManifest(console: terminal),
         Search(console: terminal),
         Install(console: terminal),
         Update(console: terminal),
@@ -60,6 +59,7 @@ do {
             VersionLatest(console: terminal),
             VersionAll(console: terminal)
         ], help: ["For interacting with dependency versions"]),
+        CleanManifest(console: terminal)
     ], arguments: Array(iterator),
     help: [
         "MIT \(currentYear) Caleb Kleveter.",
