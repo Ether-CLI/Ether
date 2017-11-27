@@ -71,8 +71,17 @@ public final class Install: Command {
             throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
         }
         let packageManifest = try String(contentsOf: manifestURL)
-        var packageData = try Data(contentsOf: resolvedURL).json()
         let mutablePackageManifest = NSMutableString(string: packageManifest)
+        let pinsCount: Int
+        
+        do {
+            let packageData = try Data(contentsOf: resolvedURL).json()
+            guard let object = packageData?["object"] as? APIJSON,
+                  let pins = object["pins"] as? [APIJSON] else { return }
+            pinsCount = pins.count
+        } catch {
+            pinsCount = 0
+        }
         
         // Get the names of the targets to add the dependency to
         let targets = try Manifest.current.getTargets()
@@ -89,12 +98,13 @@ public final class Install: Command {
         let packageUrl = arguments.options["url"] ?? newPackageData.url
         
         let packageInstance = "$1,\n        .package(url: \"\(packageUrl)\", .exact(\"\(packageVersion)\"))\n"
+        let depPackageInstance = "$0\n        .package(url: \"\(packageUrl)\", .exact(\"\(packageVersion)\"))"
         
         // Add the new package instance to the Package dependencies array.
         if packageInstenceRegex.matches(in: packageManifest, options: [], range: NSMakeRange(0, packageManifest.utf8.count)).count > 0  {
             packageInstenceRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
         } else {
-            dependenciesRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
+            dependenciesRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: depPackageInstance)
         }
         
         // Write the new package manifest to the Package.swift file
@@ -114,14 +124,11 @@ public final class Install: Command {
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
         // Calculate the number of package that where installed and output it.
-        guard let oldObject = packageData?["object"] as? APIJSON,
-            let oldPins = oldObject["pins"] as? [APIJSON] else { return }
-        
-        packageData = try Data(contentsOf: resolvedURL).json()
+        let packageData = try Data(contentsOf: resolvedURL).json()
         guard let object = packageData?["object"] as? APIJSON,
             let pins = object["pins"] as? [APIJSON] else { return }
         
-        let newPackageCount = pins.count - oldPins.count
+        let newPackageCount = pins.count - pinsCount
         
         installBar.finish()
         
