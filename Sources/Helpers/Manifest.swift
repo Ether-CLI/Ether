@@ -168,6 +168,45 @@ public class Manifest {
         return pins
     }
     
+    /// Removes extra comments and white space from a package manifest.
+    ///
+    /// - Throws: Errors from creating maifest URL, NSRegularExpression objects, or re-writing the maifest.
+    public func clean()throws {
+        let manifest = try self.get()
+        let lines = manifest.split(separator: "\n").map(String.init)
+        
+        let comment = try NSRegularExpression(pattern: " *\\/\\/ +(?!swift-tools-version).*", options: [])
+        let collapse = try NSRegularExpression(pattern: " *\\.(?:library|(?:testT|t)arget)\\(", options: [])
+        
+        var newManifest: [String] = []
+        var currentLine = ""
+        var lineIndex = 0
+        
+        while lineIndex < lines.count {
+            var line = lines[lineIndex]
+            if comment.matches(in: line, options: [], range: NSMakeRange(0, line.count)).count > 0 {
+                lineIndex += 1
+            } else if collapse.matches(in: line, options: [], range: NSMakeRange(0, line.count)).count > 0 {
+                currentLine = lines[lineIndex]
+                while !line.contains(")") {
+                    currentLine.append(line)
+                    lineIndex += 1
+                    line = lines[lineIndex]
+                }
+                currentLine.append(line)
+                lineIndex += 1
+                line = lines[lineIndex]
+                
+                newManifest.append(currentLine)
+            } else {
+                newManifest.append(line)
+                lineIndex += 1
+            }
+        }
+        
+        try self.write(newManifest.joined(separator: "\n"))
+    }
+    
     /// Gets the URL and version of a package from the IBM package catalog API on a search URL.
     ///
     /// - Parameter name: The name of the package to get data for. If it contains a forward slash, the data will be fetched for the matching package, if it does not contain a forward slash, a search will be preformed and the first result will be used.
