@@ -68,7 +68,7 @@ public final class New: Command {
     func newExecutable(arguments: [String]) throws -> Bool {
         if let _ = arguments.option("executable") {
             let name = try value("name", from: arguments)
-            let script = "mkdir \(name); cd \(name); swift package init --type=executable"
+            let script = "mkdir \(name); cd \(name); swift package init --type=executable; ether clean-manifest"
             _ = try console.backgroundExecute(program: "bash", arguments: ["-c", script])
             return true
         }
@@ -95,7 +95,7 @@ public final class New: Command {
     
     func newPackage(arguments: [String]) throws {
         let name = try value("name", from: arguments)
-        let script = "mkdir \(name); cd \(name); swift package init"
+        let script = "mkdir \(name); cd \(name); swift package init; ether clean-manifest"
         _ = try console.backgroundExecute(program: "bash", arguments: ["-c", script])
     }
 }
