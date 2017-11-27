@@ -27,6 +27,10 @@ public class CleanManifest: Command {
     public let id: String = "clean-manifest"
     public let console: ConsoleProtocol
     
+    public let help: [String] = [
+        "This command is for internal purposes only"
+    ]
+    
     public init(console: ConsoleProtocol) {
         self.console = console
     }
