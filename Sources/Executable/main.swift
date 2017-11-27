@@ -23,6 +23,7 @@
 import Foundation
 import Console
 import Ether
+import Helpers
 import libc
 
 // The current version of Ether. This string should be updated with each release.
@@ -76,9 +77,17 @@ do {
 } catch ConsoleError.noCommand {
     terminal.error("Error: ", newLine: false)
     terminal.print("No command supplied.")
-} catch ConsoleError.commandNotFound(let id) {
+} catch let ConsoleError.commandNotFound(id) {
     terminal.error("Error: ", newLine: false)
     terminal.print("Command \"\(id)\" not found.")
+} catch let EtherError.fail(message) {
+    let err = "Error: "
+    var output = message.split(separator: "\n").map({ return String(repeating: " ", count: err.count) + $0 })
+    output[0] = output[0].trim()
+    
+    terminal.error("Error: ", newLine: false)
+    terminal.print(output.joined(separator: "\n"))
+    exit(1)
 } catch {
     terminal.error("Error: ", newLine: false)
     terminal.print("\(error)")
