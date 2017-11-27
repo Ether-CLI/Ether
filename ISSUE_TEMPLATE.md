@@ -1,4 +1,4 @@
-Below are two templates, one for feature requests, the other is for bugs. Please remove this message and the template you are not using before you post the issue.
+**Note:** Below are two templates, one for feature requests, the other is for bugs. Please remove this message and the template you are not using before you post the issue.
 
 ## BUG
 
@@ -6,11 +6,11 @@ Below are two templates, one for feature requests, the other is for bugs. Please
 - Ether Version:
 - Swift Package Manager tools version:
 
-Current Behaviour (errors, bad code injection, etc.):
+### Current Behavior (errors, bad code injection, etc.):
 
-Expected Behaviour:
+### Expected Behaviour:
 
-How to Reproduce:
+### How to Reproduce:
 
 ## Feature
 
