@@ -46,6 +46,17 @@ public class Manifest {
         return try String(contentsOf: resolvedURL)
     }
     
+    /// Rewrites the package manifest file with a string.
+    ///
+    /// - Parameter string: The string the rewrite the manifest with.
+    /// - Throws: Any errors that occur when createing the URL to the manifest file or in writing the manifest.
+    public func write(_ string: String)throws {
+        guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
+            throw EtherError.fail("Unable to create URL for package manifest file.")
+        }
+        try string.data(using: .utf8)?.write(to: manifestURL)
+    }
+    
     /// Gets the package manifest data in JSON format.
     ///
     /// - Parameter console: The `ConsoleProtocol` instance to use to run `swift package dump-package`.
