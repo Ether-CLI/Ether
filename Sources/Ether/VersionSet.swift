@@ -53,6 +53,10 @@ public final class VersonSet: Command {
             ])
     ]
     
+    public var help: [String] = [
+        "Changes the version of a single dependency"
+    ]
+    
     public let console: ConsoleProtocol
     
     public init(console: ConsoleProtocol) {
