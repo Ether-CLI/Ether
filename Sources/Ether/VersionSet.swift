@@ -26,6 +26,33 @@ import Helpers
 public final class VersonSet: Command {
     public let id: String = "set"
     
+    public var signature: [Argument] = [
+        Value(name: "name", help: [
+                "The name of the package to change the version for (case insensative)"
+            ]),
+        Value(name: "verson", help: [
+                "The value for the new version. The format varies depending on the version type used"
+            ]),
+        Option(name: "from", short: "f", help: [
+                "Sets the dependency version argument to `from: VERSION`"
+            ]),
+        Option(name: "up-to-next-major", short: "u", help: [
+                "Sets the dependency version argument to `.upToNextMinor(from: \"VERSION\")`"
+            ]),
+        Option(name: "exact", short: "e", help: [
+                "Sets the dependency version argument to `.exact(\"VERSION\")`"
+            ]),
+        Option(name: "range", short: "r", help: [
+                "Sets the dependency version argument to `VERSION`"
+            ]),
+        Option(name: "branch", short: "b", help: [
+                "Sets the dependency version argument to `.branch(\"VERSION\")`"
+            ]),
+        Option(name: "revision", help: [
+                "Sets the dependency version argument to `.revision(\"VERSION\")`"
+            ])
+    ]
+    
     public let console: ConsoleProtocol
     
     public init(console: ConsoleProtocol) {
