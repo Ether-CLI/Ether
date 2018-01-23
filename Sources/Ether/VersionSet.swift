@@ -66,4 +66,19 @@ public final class VersonSet: Command {
     public func run(arguments: [String]) throws {
         
     }
+    
+    private func versionOption(from arguments: [String], with version: String) -> String {
+        if arguments.option("from") != nil {
+            return "from: \"\(version)\""
+        } else if arguments.option("up-to-next-major") != nil {
+            return ".upToNextMajor(from: \"\(version)\")"
+        } else if arguments.option("range") != nil {
+            return "\(version.dropLast(8))\(String(version.dropFirst(5)).dropLast(5))\(version.dropFirst(8))"
+        } else if arguments.option("branch") != nil {
+            return ".branch(\"\(version)\")"
+        } else if arguments.option("revision") != nil {
+            return ".revision(\"\(version)\")"
+        }
+        return ".exact(\"\(version)\")"
+    }
 }
