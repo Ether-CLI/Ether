@@ -111,8 +111,8 @@ public final class Install: Command {
         try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
         
         // Update the packages.
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
         // Get the new package name and add it to the previously accepted targets.
         let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
@@ -135,7 +135,7 @@ public final class Install: Command {
         if let _ = arguments.options["xcode"] {
             let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
             xcodeBar.finish()
             try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
         }
