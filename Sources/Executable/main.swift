@@ -57,7 +57,8 @@ do {
         FixInstall(console: terminal),
         Group(id: "version", commands: [
             VersionLatest(console: terminal),
-            VersionAll(console: terminal)
+            VersionAll(console: terminal),
+            VersonSet(console: terminal)
             ], help: ["For interacting with dependency versions"]),
         CleanManifest(console: terminal)   
     ]
