@@ -48,11 +48,11 @@ public class FixInstall: Command {
         fixBar.start()
         
         _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
         if arguments.option("no-build") == nil {
-            _ = try console.backgroundExecute(program: "swift", arguments: ["build", "--enable-prefetching"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
         }
         
         fixBar.finish()

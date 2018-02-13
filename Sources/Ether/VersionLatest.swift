@@ -72,15 +72,15 @@ public final class VersionLatest: Command {
         }
         
         try String(nsManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
         updateBar.finish()
         
         if let _ = arguments.options["xcode"] {
             let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
             xcodeBar.finish()
             try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
         }
