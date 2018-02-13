@@ -22,15 +22,16 @@
 
 import Console
 import Helpers
+import Foundation
 
 public final class VersonSet: Command {
     public let id: String = "set"
     
     public var signature: [Argument] = [
         Value(name: "name", help: [
-                "The name of the package to change the version for (case insensative)"
+                "The name of the package to change the version for"
             ]),
-        Value(name: "verson", help: [
+        Value(name: "version", help: [
                 "The value for the new version. The format varies depending on the version type used"
             ]),
         Option(name: "from", short: "f", help: [
@@ -64,7 +65,25 @@ public final class VersonSet: Command {
     }
     
     public func run(arguments: [String]) throws {
+        let package = try value("name", from: arguments)
+        let version = try value("version", from: arguments)
+        let versionLitteral = versionOption(from: arguments, with: version)
         
+        let url = try Manifest.current.getPackageUrl(for: package)
+        let manifest = try NSMutableString(string: Manifest.current.get())
+        let pattern = try NSRegularExpression(
+            pattern: "(\\.package\\(url:\\s*\"\(url)\",\\s*)(.+?(?=\\),))(.*?\\n)",
+            options: []
+        )
+        let count = try pattern.matches(in: Manifest.current.get(), options: [], range: NSMakeRange(0, manifest.length)).count
+        console.output("""
+        Count: \(count)
+        URL: \(url)
+        Reg: \("(\\.package\\(url:\\s*\"\(url)\",\\s*)(.+?(?=\\),))(.*?\\n)")
+        """, style: .plain, newLine: true)
+        pattern.replaceMatches(in: manifest, options: [], range: NSMakeRange(0, manifest.length), withTemplate: "$1\(versionLitteral)$3")
+        
+        try Manifest.current.write(String(manifest))
     }
     
     private func versionOption(from arguments: [String], with version: String) -> String {
