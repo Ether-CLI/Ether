@@ -43,23 +43,12 @@ public final class VersionAll: Command {
         let fetchingDataBar = console.loadingBar(title: "Getting Package Data")
         fetchingDataBar.start()
         
-        let manager = FileManager.default
-        
-        guard let packageData = manager.contents(atPath: "\(manager.currentDirectoryPath)/Package.resolved") else {
-            throw fail(bar: fetchingDataBar, with: "Make sure you are in the root of an SPM project.")
-        }
-        
-        guard let packageJson = try packageData.json()?["object"] as? [String: AnyObject] else {
-            throw fail(bar: fetchingDataBar, with: "Unable to parse data from Package.resolved.")
-        }
-        
-        if let pins = packageJson["pins"] as? [[String: AnyObject]] {
-            fetchingDataBar.finish()
-            pins.forEach { package in
-                console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
-                if let state = package["state"] as? [String: AnyObject] {
-                    console.output("v\(state["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
-                }
+        let pins = try Manifest.current.getPins()
+        fetchingDataBar.finish()
+        pins.forEach { package in
+            console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
+            if let state = package["state"] as? [String: AnyObject] {
+                console.output("v\(state["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
             }
         }
     }
