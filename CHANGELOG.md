@@ -1,3 +1,11 @@
+## [1.10.0] 2018-02-18
+
+### Added
+- `ether version set` command to update the version of a single package.
+
+### Updated
+- The RegEx for any command that matches the version of a package, so it handles any version type for a package.
+
 ## [1.9.2] 2017-11-27
 
 ### Fixed
