@@ -27,7 +27,7 @@ import Helpers
 import libc
 
 // The current version of Ether. This string should be updated with each release.
-let version = "1.9.2"
+let version = "1.10.0"
 var arguments = CommandLine.arguments
 let terminal = Terminal(arguments: arguments)
 var iterator = arguments.makeIterator()
@@ -57,7 +57,8 @@ do {
         FixInstall(console: terminal),
         Group(id: "version", commands: [
             VersionLatest(console: terminal),
-            VersionAll(console: terminal)
+            VersionAll(console: terminal),
+            VersonSet(console: terminal)
             ], help: ["For interacting with dependency versions"]),
         CleanManifest(console: terminal)   
     ]

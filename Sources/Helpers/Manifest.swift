@@ -99,7 +99,7 @@ public class Manifest {
         return name
     }
     
-    /// Gets the name of the package that has a specefied URL by reading the `Package.resolved` file data.
+    /// Gets the URL of the package that has a specefied name by reading the `Package.resolved` file data.
     ///
     /// - Parameter name: The ame of the package that the URL is to get fetched from.
     /// - Returns: The URL of the package that was found.

@@ -54,7 +54,7 @@ public final class Remove: Command {
         let name = try value("name", from: arguments)
         let url = try Manifest.current.getPackageUrl(for: name)
         
-        let regex = try NSRegularExpression(pattern: "\\,?\\n *\\.package\\(url: *\"\(url)\", *\\.?\\w+(:|\\() *\"([\\d\\.]+)\"\\)?\\),?", options: .caseInsensitive)
+        let regex = try NSRegularExpression(pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(?=,?\n)", options: .caseInsensitive)
         let oldPins = try Manifest.current.getPins()
         
         let packageString = try Manifest.current.get()
@@ -69,8 +69,8 @@ public final class Remove: Command {
         
         do {
             try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         } catch let error {
             removingProgressBar.fail()
             throw error
@@ -84,7 +84,7 @@ public final class Remove: Command {
         if let _ = arguments.options["xcode"] {
             let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
             xcodeBar.finish()
             try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
         }

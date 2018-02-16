@@ -55,7 +55,7 @@ public final class VersionLatest: Command {
         let fileManager = FileManager.default
         let manifest = try Manifest.current.get()
         let nsManifest = NSMutableString(string: manifest)
-        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(\\.?\\w+(\\(|:)\\s*\"[\\w\\.]+\"\\)?)(\\))", options: [])
+        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(.*?)(\\),?\\n)", options: [])
         let matches = versionPattern.matches(in: manifest, options: [], range: NSMakeRange(0, manifest.utf8.count))
         let packageNames = matches.map { match -> String in
             let name = versionPattern.replacementString(for: match, in: manifest, offset: 0, template: "$2")
@@ -72,15 +72,15 @@ public final class VersionLatest: Command {
         }
         
         try String(nsManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "resolve"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
         
         updateBar.finish()
         
         if let _ = arguments.options["xcode"] {
             let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
             xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "--enable-prefetching", "generate-xcodeproj"])
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
             xcodeBar.finish()
             try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
         }
