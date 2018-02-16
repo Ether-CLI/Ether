@@ -23,7 +23,7 @@ You can see a whole list of the available commands [here](https://github.com/cal
 With Homebrew:
 
 ```bash
-brew tap calebkleveter/tap
+brew tap Ether-CLI/tap
 brew install ether
 ```
 
