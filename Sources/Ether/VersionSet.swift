@@ -41,7 +41,7 @@ public final class VersonSet: Command {
                 "Sets the dependency version argument to `.upToNextMinor(from: \"VERSION\")`"
             ]),
         Option(name: "exact", short: "e", help: [
-                "Sets the dependency version argument to `.exact(\"VERSION\")`"
+                "(Default) Sets the dependency version argument to `.exact(\"VERSION\")`"
             ]),
         Option(name: "range", short: "r", help: [
                 "Sets the dependency version argument to `VERSION`"
