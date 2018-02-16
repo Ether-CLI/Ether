@@ -34,6 +34,9 @@ public final class VersonSet: Command {
         Value(name: "version", help: [
                 "The value for the new version. The format varies depending on the version type used"
             ]),
+        Option(name: "xcode", short: "x", help: [
+                "Regenerate the Xcode project after updating a package's version"
+            ]),
         Option(name: "from", short: "f", help: [
                 "Sets the dependency version argument to `from: VERSION`"
             ]),
@@ -65,6 +68,9 @@ public final class VersonSet: Command {
     }
     
     public func run(arguments: [String]) throws {
+        let updateBar = console.loadingBar(title: "Updating Package Version")
+        updateBar.start()
+        
         let package = try value("name", from: arguments)
         let version = try value("version", from: arguments)
         let versionLitteral = versionOption(from: arguments, with: version)
@@ -76,8 +82,22 @@ public final class VersonSet: Command {
             options: []
         )
         pattern.replaceMatches(in: manifest, options: [], range: NSMakeRange(0, manifest.length), withTemplate: "$1\(versionLitteral)$3")
-        
         try Manifest.current.write(String(manifest))
+        
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
+        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        
+        updateBar.finish()
+        
+        if let _ = arguments.options["xcode"] {
+            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
+            xcodeBar.start()
+            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
+            xcodeBar.finish()
+            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+        }
+        
+        console.output("\(package) version was updated", style: .plain, newLine: true)
     }
     
     private func versionOption(from arguments: [String], with version: String) -> String {
