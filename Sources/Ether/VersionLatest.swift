@@ -55,7 +55,7 @@ public final class VersionLatest: Command {
         let fileManager = FileManager.default
         let manifest = try Manifest.current.get()
         let nsManifest = NSMutableString(string: manifest)
-        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(\\.?\\w+(\\(|:)\\s*\"[\\w\\.]+\"\\)?)(\\))", options: [])
+        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(.*?)(\\),?\\n)", options: [])
         let matches = versionPattern.matches(in: manifest, options: [], range: NSMakeRange(0, manifest.utf8.count))
         let packageNames = matches.map { match -> String in
             let name = versionPattern.replacementString(for: match, in: manifest, offset: 0, template: "$2")
