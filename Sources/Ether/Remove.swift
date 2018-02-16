@@ -54,7 +54,7 @@ public final class Remove: Command {
         let name = try value("name", from: arguments)
         let url = try Manifest.current.getPackageUrl(for: name)
         
-        let regex = try NSRegularExpression(pattern: "\\,?\\n *\\.package\\(url: *\"\(url)\", *\\.?\\w+(:|\\() *\"([\\d\\.]+)\"\\)?\\),?", options: .caseInsensitive)
+        let regex = try NSRegularExpression(pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(?=,?\n)", options: .caseInsensitive)
         let oldPins = try Manifest.current.getPins()
         
         let packageString = try Manifest.current.get()
