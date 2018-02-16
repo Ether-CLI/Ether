@@ -6,6 +6,10 @@
 
 # Ether
 
+**Notice!**
+
+Ether is currently out of comission because the service that was used to fetch package data from (IBM's package catalog) is [no longer hosted](https://packagecatalog.com/). There is work going on for a [replacement](https://github.com/vapor-community/PackageCatalogAPI), but development is moving slowly. If you wold like to pitch in, pop on over to the [Vapor Slack](https://vapor.team/) and ping me @calebkleveter!
+
 ### What is it?
 
 Ether is a CLI the integrates with SPM (Swift Package Manager).
