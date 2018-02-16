@@ -72,15 +72,9 @@ public final class VersonSet: Command {
         let url = try Manifest.current.getPackageUrl(for: package)
         let manifest = try NSMutableString(string: Manifest.current.get())
         let pattern = try NSRegularExpression(
-            pattern: "(\\.package\\(url:\\s*\"\(url)\",\\s*)(.+?(?=\\),))(.*?\\n)",
+            pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(\\),?\\n)",
             options: []
         )
-        let count = try pattern.matches(in: Manifest.current.get(), options: [], range: NSMakeRange(0, manifest.length)).count
-        console.output("""
-        Count: \(count)
-        URL: \(url)
-        Reg: \("(\\.package\\(url:\\s*\"\(url)\",\\s*)(.+?(?=\\),))(.*?\\n)")
-        """, style: .plain, newLine: true)
         pattern.replaceMatches(in: manifest, options: [], range: NSMakeRange(0, manifest.length), withTemplate: "$1\(versionLitteral)$3")
         
         try Manifest.current.write(String(manifest))
