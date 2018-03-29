@@ -5,14 +5,13 @@ import PackageDescription
 let package = Package(
     name: "Ether",
     dependencies: [
-        .package(url: "https://github.com/vapor/console.git", .exact("2.3.0")),
-        .package(url: "https://github.com/vapor/json.git", .exact("2.2.1")),
-        .package(url: "https://github.com/vapor/core.git", .exact("2.2.0"))
+        .package(url: "https://github.com/vapor/console.git", from: "3.0.0-rc"),
+        .package(url: "https://github.com/vapor/core.git", from: "3.0.0-rc")
     ],
     targets: [
         .target(name: "GitHub", dependencies: ["Core"]),
-        .target(name: "Helpers", dependencies: ["Core", "JSON"]),
-        .target(name: "Ether", dependencies: ["Helpers", "Console", "JSON"]),
+        .target(name: "Helpers", dependencies: ["Core"]),
+        .target(name: "Ether", dependencies: ["Helpers", "Console"]),
         .target(name: "Executable", dependencies: ["Ether"])
     ]
 )
