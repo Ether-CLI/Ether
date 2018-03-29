@@ -10,6 +10,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/core.git", .exact("2.2.0"))
     ],
     targets: [
+        .target(name: "GitHub", dependencies: ["Core"]),
         .target(name: "Helpers", dependencies: ["Core", "JSON"]),
         .target(name: "Ether", dependencies: ["Helpers", "Console", "JSON"]),
         .target(name: "Executable", dependencies: ["Ether"])
