@@ -10,8 +10,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "GitHub", dependencies: ["Core"]),
-        .target(name: "Helpers", dependencies: ["Core"]),
+        .target(name: "Helpers", dependencies: ["Core", "Console"]),
         .target(name: "Ether", dependencies: ["Helpers", "Console"]),
-        .target(name: "Executable", dependencies: ["Ether"])
+        .target(name: "Executable", dependencies: ["Ether", "Console"])
     ]
 )
