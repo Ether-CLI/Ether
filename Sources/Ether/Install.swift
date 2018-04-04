@@ -1,60 +1,49 @@
-//// The MIT License (MIT)
-////
-//// Copyright (c) 2017 Caleb Kleveter
-////
-//// Permission is hereby granted, free of charge, to any person obtaining a copy
-//// of this software and associated documentation files (the "Software"), to deal
-//// in the Software without restriction, including without limitation the rights
-//// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//// copies of the Software, and to permit persons to whom the Software is
-//// furnished to do so, subject to the following conditions:
-////
-//// The above copyright notice and this permission notice shall be included in all
-//// copies or substantial portions of the Software.
-////
-//// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//// SOFTWARE.
+// The MIT License (MIT)
 //
-//import Helpers
-//import Console
-//import Foundation
-//import Core
+// Copyright (c) 2017 Caleb Kleveter
 //
-//public final class Install: Command {
-//    public let id = "install"
-//    public let baseURL = "https://packagecatalog.com/data/package/"
-//    
-//    public let signature: [Argument] = [
-//        Value(name: "name", help: [
-//            "The name of the package that will be installed"
-//        ]),
-//        Option(name: "url", short: "u", help: [
-//            "The URL for the package"
-//        ]),
-//        Option(name: "version", short: "v", help: [
-//            "The desired version for the package",
-//            "This defaults to the latest version"
-//        ]),
-//        Option(name: "xcode", short: "x", help: [
-//            "Regenerate the Xcode project after the install is complete"
-//        ])
-//    ]
-//    
-//    public var help: [String] = [
-//        "Installs a package into the current project"
-//    ]
-//    
-//    public let console: ConsoleProtocol
-//    public let client = PackageJSONFetcher()
-//    
-//    public init(console: ConsoleProtocol) {
-//        self.console = console
-//    }
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+import Command
+import Async
+
+public final class Install: Command {
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name of the package that will be installed"])
+    ]
+    
+    public var options: [CommandOption] = [
+        CommandOption.value(name: "url", short: "u", help: ["The URL for the package"]),
+        CommandOption.value(name: "version", short: "v", help: [
+                "The desired version for the package",
+                "This defaults to the latest version"
+            ]),
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate the Xcode project after the install is complete"])
+    ]
+    
+    public var help: [String] = ["Installs a package into the current project"]
+    
+    public func run(using context: CommandContext) throws -> Future<Void> {
+        return context.container.eventLoop.newSucceededFuture(result: ())
+    }
+}
+
 //    
 //    public func run(arguments: [String]) throws {
 //        console.output("Reading Package Targets...", style: .info, newLine: true)
@@ -179,13 +168,3 @@
 //        return acceptedTargets
 //    }
 //}
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
