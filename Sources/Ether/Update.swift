@@ -1,49 +1,44 @@
-//// The MIT License (MIT)
-////
-//// Copyright (c) 2017 Caleb Kleveter
-////
-//// Permission is hereby granted, free of charge, to any person obtaining a copy
-//// of this software and associated documentation files (the "Software"), to deal
-//// in the Software without restriction, including without limitation the rights
-//// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//// copies of the Software, and to permit persons to whom the Software is
-//// furnished to do so, subject to the following conditions:
-////
-//// The above copyright notice and this permission notice shall be included in all
-//// copies or substantial portions of the Software.
-////
-//// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//// SOFTWARE.
+// The MIT License (MIT)
 //
-//import Console
+// Copyright (c) 2017 Caleb Kleveter
 //
-//public final class Update: Command {
-//    public let id = "update"
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-//    public let signature: [Argument] = [
-//        Option(name: "self", short: "s", help: [
-//            "Updates Ether"
-//        ]),
-//        Option(name: "xcode", short: "x", help: [
-//            "Regenerate and open the Xcode project after update its packages"
-//        ])
-//    ]
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
-//    public let help: [String] = [
-//        "Updates your dependencies."
-//    ]
-//
-//    public let console: ConsoleProtocol
-//
-//    public init(console: ConsoleProtocol) {
-//        self.console = console
-//    }
-//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+import Console
+import Command
+import Async
+
+public final class Update: Command {
+    public var arguments: [CommandArgument] = []
+    
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "ether", short: "e", help: ["Updates Ether CLI"]),
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate and open the Xcode project after updating packages"])
+    ]
+    
+    public var help: [String] = ["Updates a project's dependencies."]
+    
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        return context.container.eventLoop.newSucceededFuture(result: ())
+    }
+}
+
 //    public func run(arguments: [String]) throws {
 //        if let _ = arguments.option("self") {
 //            let updateBar = console.loadingBar(title: "Updating Ether")
