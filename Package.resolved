@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/vapor/console.git",
         "state": {
           "branch": null,
-          "revision": "273cf2ed1f4daba88a452494c342020171d8c7b8",
-          "version": "3.0.0-rc.2.2"
+          "revision": "038e30ec9004fb1915d14d964a3facc1ec5c80f4",
+          "version": "3.0.0"
         }
       },
       {
