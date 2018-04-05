@@ -15,8 +15,17 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "70719b347f2ee7880776d5b03add924628eac3d2",
-          "version": "3.0.0-rc.2.5.2"
+          "revision": "5383e40f19d71da99e496afa9972c085abc2379d",
+          "version": "3.0.2"
+        }
+      },
+      {
+        "package": "Manifest",
+        "repositoryURL": "https://github.com/Ether-CLI/Manifest.git",
+        "state": {
+          "branch": null,
+          "revision": "3722e0a7d47b914342b886a6e9b6c91b4d8ce943",
+          "version": "0.1.0"
         }
       },
       {
@@ -24,8 +33,8 @@
         "repositoryURL": "https://github.com/vapor/service.git",
         "state": {
           "branch": null,
-          "revision": "02205a16a3f4714a08836529f5a868c2ce256719",
-          "version": "1.0.0-rc.2.2"
+          "revision": "281a70b69783891900be31a9e70051b6fe19e146",
+          "version": "1.0.0"
         }
       },
       {
