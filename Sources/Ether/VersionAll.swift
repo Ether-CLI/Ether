@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Manifest
 import Console
 import Command
 import Async
@@ -32,21 +33,25 @@ public final class VersionAll: Command {
     public var help: [String] = ["Outputs the name of each package installed and its version"]
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        context.console.output("Getting Package Data...", style: .success)
+        
+        let pins = try Manifest.current.resolved().object.pins
+        
+        pins.forEach { package in
+            context.console.output(package.package, style: .success, newLine: false)
+            let version: String
+            
+            if let number = package.state.version {
+                version = "v\(number)"
+            } else if let branch = package.state.branch {
+                version = branch
+            } else {
+                version = package.state.revision
+            }
+            
+            context.console.print(version)
+        }
+        
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }
-
-//    public func run(arguments: [String]) throws {
-//        let fetchingDataBar = console.loadingBar(title: "Getting Package Data")
-//        fetchingDataBar.start()
-//        
-//        let pins = try Manifest.current.getPins()
-//        fetchingDataBar.finish()
-//        pins.forEach { package in
-//            console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
-//            if let state = package["state"] as? [String: AnyObject] {
-//                console.output("v\(state["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
-//            }
-//        }
-//    }
-//}
