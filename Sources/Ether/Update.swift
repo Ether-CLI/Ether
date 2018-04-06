@@ -35,66 +35,66 @@ public final class Update: Command {
     public var help: [String] = ["Updates a project's dependencies."]
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        if context.options["ether"] != nil {
+            let updating = context.console.loadingBar(title: "Updating Ether")
+            _ = updating.start(on: context.container)
+            
+            _ = try Process.execute("bash", ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
+            
+            updating.succeed()
+            self.printEtherArt(with: context.console)
+        } else {
+            context.console.output("This may take some time...", style: .info, newLine: true)
+
+            let updating = context.console.loadingBar(title: "Updating Packages")
+            _ = updating.start(on: context.container)
+            
+            _ = try Process.execute("swift", ["package", "update"])
+            _ = try Process.execute("swift", ["package", "resolve"])
+            
+            updating.succeed()
+
+            if context.options["xcode"] != nil {
+                let xcode = context.console.loadingBar(title: "Generating Xcode Project")
+                _ = xcode.start(on: context.container)
+                
+                _ = try Process.execute("swift", ["package", "generate-xcodeproj"])
+                
+                xcode.succeed()
+                _ = try Process.execute("/bin/sh", ["-c", "open *.xcodeproj"])
+            }
+        }
+        
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
-}
+    
+    private func printEtherArt(with console: Console) {
+        let etherArt = """
+          | • |
+          | • |
+          | • |
+         /     \\
+        /       \\
+        """
 
-//    public func run(arguments: [String]) throws {
-//        if let _ = arguments.option("self") {
-//            let updateBar = console.loadingBar(title: "Updating Ether")
-//            updateBar.start()
-//            _ = try console.backgroundExecute(program: "/bin/sh", arguments: ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
-//            updateBar.finish()
-//            self.printEtherArt()
-//        } else {
-//            console.output("This may take some time...", style: .info, newLine: true)
-//            
-//            let updateBar = console.loadingBar(title: "Updating Packages")
-//            updateBar.start()
-//            _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
-//            updateBar.finish()
-//            
-//            if let _ = arguments.options["xcode"] {
-//                let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-//                xcodeBar.start()
-//                _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-//                xcodeBar.finish()
-//                try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
-//            }
-//        }
-//    }
-//
-//    private func printEtherArt() {
-//        let etherArt = """
-//          | • |
-//          | • |
-//          | • |
-//         /     \\
-//        /       \\
-//        """
-//
-//        let characterColors: [Character: ConsoleColor] = [
-//            "•": .green
-//        ]
-//
-//        for character in console.center(etherArt) {
-//            let style: ConsoleStyle
-//
-//            if let color = characterColors[character] {
-//                style = .custom(color)
-//            } else {
-//                style = .plain
-//            }
-//
-//            console.output("\(character)", style: style, newLine: false)
-//        }
-//
-//        console.print()
-//        console.print()
-//        console.output(console.center("Thanks for Updating Ether!"), style: .plain, newLine: true)
-//    }
-//
-//}
+        let characterColors: [Character: ConsoleColor] = [
+            "•": .green
+        ]
+
+        for character in console.center(etherArt) {
+            let style: ConsoleStyle
+
+            if let color = characterColors[character] {
+                style = ConsoleStyle(color: color)
+            } else {
+                style = .plain
+            }
+
+            console.output("\(character)", style: style, newLine: false)
+        }
+
+        console.print()
+        console.print()
+        console.output(console.center("Thanks for Updating Ether!"), style: .plain, newLine: true)
+    }
+}
