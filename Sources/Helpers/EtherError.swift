@@ -20,13 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
-
-public enum EtherError: Error {
-    case fail(String)
-}
-
-public func fail(bar: LoadingBar, with message: String) -> Error {
-    bar.fail()
-    return EtherError.fail(message)
-}
+//import Console
+//
+//public enum EtherError: Error {
+//    case fail(String)
+//}
+//
+//public func fail(bar: LoadingBar, with message: String) -> Error {
+//    bar.fail()
+//    return EtherError.fail(message)
+//}
