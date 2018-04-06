@@ -20,8 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Path: ~/Library/Application\ Support/Ether
-
+import Foundation
 import Console
 import Command
 import Async
@@ -39,42 +38,33 @@ public final class Template: Command {
     public var help: [String] = ["Creates and stores a template for use as the starting point of a project."]
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let name = try context.argument("name")
+        let removeTemplate = context.options["remove"] == nil ? false : true
+        let manager = FileManager.default
+        let barTitle = removeTemplate ? "Deleting Template" : "Saving Template"
+        
+        let temapletBar = context.console.loadingBar(title: barTitle)
+        _ = temapletBar.start(on: context.container)
+        
+        if #available(OSX 10.12, *) {
+            var isDir : ObjCBool = true
+            let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
+            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".dropFirst(7))
+            let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
+
+            if removeTemplate {
+                if !directoryExists { fatalError() }
+                _ = try Process.execute("rm", ["-rm", "\(defaultPath)/\(name)"])
+            } else {
+                if directoryExists { fatalError() }
+                let current = manager.currentDirectoryPath + "/."
+                _ = try Process.execute("cp", ["-a", "\(current)", "\(defaultPath)/\(name)"])
+            }
+        } else {
+            fatalError()
+        }
+        
+        temapletBar.succeed()
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }
-
-//    public func run(arguments: [String]) throws {
-//        let name = try value("template-name", from: arguments)
-//        let useGitHub = arguments.option("github") != nil ? true : false
-//        let removeTemplate = arguments.option("remove") != nil ? true : false
-//        let manager = FileManager.default
-//        let loadingBarTitle = removeTemplate ? "Deleting Template" : "Saving Template"
-//        
-//        let savingBar = console.loadingBar(title: loadingBarTitle)
-//        savingBar.start()
-//        
-//        if #available(OSX 10.12, *) {
-//            var isDir : ObjCBool = true
-//            let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
-//            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".dropFirst(7))
-//            let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
-//            
-//            if removeTemplate {
-//                if !directoryExists { throw fail(bar: savingBar, with: "No template with that name exists") }
-//                shell(command: "/bin/rm", "-rf", "\(defaultPath)/\(name)")
-//            } else {
-//                if directoryExists { throw fail(bar: savingBar, with: "A template with that name already exists") }
-//                let current = manager.currentDirectoryPath + "/."
-//                shell(command: "/bin/cp", "-a", "\(current)", "\(defaultPath)/\(name)")
-//            }
-//        } else {
-//            throw fail(bar: savingBar, with: "This command is not supported in macOS versions older then 10.12")
-//        }
-//        savingBar.finish()
-//        
-//        if useGitHub {
-//            console.output("The GitHub flag is currently not implimented", style: .warning, newLine: true)
-//        }
-//        
-//    }
-//}
