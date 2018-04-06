@@ -21,6 +21,7 @@
 // SOFTWARE.
 //
 
+import Manifest
 import Console
 import Command
 import Async
@@ -37,53 +38,33 @@ public final class Remove: Command {
     public var help: [String] = ["Removes a package from the manifest and uninstalls it"]
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let removing = context.console.loadingBar(title: "Removing Dependency")
+        _ = removing.start(on: context.container)
+        
+        let name = try context.argument("name")
+        let pinCount = try Manifest.current.resolved().object.pins.count
+        
+        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first?.repositoryURL else {
+            fatalError()
+        }
+        try Manifest.current.dependency(withURL: url)?.delete()
+        
+        _ = try Process.execute("swift", ["package", "update"])
+        _ = try Process.execute("swift", ["package", "resolve"])
+        
+        let removed = try pinCount - Manifest.current.resolved().object.pins.count
+        removing.succeed()
+        
+        if context.options["xcode"] != nil {
+            let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+            _ = xcodeBar.start(on: context.container)
+            
+            _ = try Process.execute("swift", ["package", "generate-xcodeproj"])
+            xcodeBar.succeed()
+            _ = try Process.execute("bash", ["-c", "open *.xcodeproj"])
+        }
+        
+        context.console.print("📦  \(removed) packages removed")
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }
-    
-//    public func run(arguments: [String]) throws {
-//        let removingProgressBar = console.loadingBar(title: "Removing Dependency")
-//        removingProgressBar.start()
-//        
-//        let manager = FileManager.default
-//        let name = try value("name", from: arguments)
-//        let url = try Manifest.current.getPackageUrl(for: name)
-//        
-//        let regex = try NSRegularExpression(pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(?=,?\n)", options: .caseInsensitive)
-//        let oldPins = try Manifest.current.getPins()
-//        
-//        let packageString = try Manifest.current.get()
-//        let mutableString = NSMutableString(string: packageString)
-//        
-//        if regex.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count == 0 {
-//            throw fail(bar: removingProgressBar, with: "No packages matching the name passed in where found")
-//        }
-//        
-//        regex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "")
-//        try mutableString.removeDependency(name)
-//        
-//        do {
-//            try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-//        } catch let error {
-//            removingProgressBar.fail()
-//            throw error
-//        }
-//        
-//        let pins = try Manifest.current.getPins()
-//        let pinsCount = oldPins.count - pins.count
-//        
-//        removingProgressBar.finish()
-//        
-//        if let _ = arguments.options["xcode"] {
-//            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-//            xcodeBar.start()
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-//            xcodeBar.finish()
-//            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
-//        }
-//        
-//        console.output("📦  \(pinsCount) packages removed", style: .custom(.white), newLine: true)
-//    }
-//}
