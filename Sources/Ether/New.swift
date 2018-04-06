@@ -40,7 +40,7 @@ public final class New: Command {
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let newProject = context.console.loadingBar(title: "Generating Project")
-        newProject.start()
+        _ = newProject.start(on: context.container)
 
         let executable = try newExecutable(from: context)
         let template = try newFromTemplate(using: context)
@@ -48,8 +48,7 @@ public final class New: Command {
             try newPackage(from: context)
         }
 
-        newProject.finish()
-        
+        newProject.succeed()
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
@@ -57,7 +56,7 @@ public final class New: Command {
         if let _ = context.options["executable"] {
             let name = try context.argument("name")
             let script = "mkdir \(name); cd \(name); swift package init --type=executable; ether clean-manifest"
-            _ = try context.console.backgroundExecute(program: "bash", arguments: ["-c", script])
+            _ = try Process.execute("bash", ["-c", script])
             return true
         }
         return false
@@ -72,7 +71,7 @@ public final class New: Command {
                 let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
                 let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".dropFirst(7))
                 let current = manager.currentDirectoryPath
-                _ = try context.console.backgroundExecuteRaw(program: "/bin/cp", arguments: ["-a", "\(templatePath)", "\(current)/\(name)"])
+                _ = try Process.execute("cp", ["-a", "\(templatePath)", "\(current)/\(name)"])
             } else {
                 fatalError("This command is not supported in macOS versions older then 10.12")
                 // throw EtherError.fail("This command is not supported in macOS versions older then 10.12")
@@ -85,6 +84,6 @@ public final class New: Command {
     func newPackage(from context: CommandContext) throws {
         let name = try context.argument("name")
         let script = "mkdir \(name); cd \(name); swift package init; ether clean-manifest"
-        _ = try context.console.backgroundExecute(program: "bash", arguments: ["-c", script])
+        _ = try Process.execute("bash", ["-c", script])
     }
 }
