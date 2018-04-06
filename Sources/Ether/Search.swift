@@ -32,7 +32,7 @@ public final class Search: Command {
     public var options: [CommandOption] = [
         CommandOption.value(name: "max-results", default: "20", help: [
                 "The maximum number of results that will be returned.",
-                "This defaults value 20."
+                "This defaults to 20."
             ]),
         CommandOption.value(name: "sort", default: "moststarred", help: [
                 "The sorting method to use:",
