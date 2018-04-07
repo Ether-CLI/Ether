@@ -22,7 +22,6 @@
 
 import Console
 import Command
-import Async
 
 public final class FixInstall: Command {
     public var arguments: [CommandArgument] = []

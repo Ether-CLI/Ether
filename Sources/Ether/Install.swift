@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 import Command
-import Async
 
 public final class Install: Command {
     public var arguments: [CommandArgument] = [

@@ -24,7 +24,6 @@ import Foundation
 import Helpers
 import Console
 import Command
-import Async
 
 public final class Template: Command {
     public var arguments: [CommandArgument] = [

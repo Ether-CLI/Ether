@@ -22,7 +22,6 @@
 
 import Console
 import Command
-import Async
 
 public final class Search: Command {
     public var arguments: [CommandArgument] = [

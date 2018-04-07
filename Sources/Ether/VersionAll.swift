@@ -23,7 +23,6 @@
 import Manifest
 import Console
 import Command
-import Async
 
 public final class VersionAll: Command {
     public var arguments: [CommandArgument] = []

@@ -25,7 +25,6 @@ import Manifest
 import Helpers
 import Command
 import Console
-import Async
 
 public final class New: Command {
     public var arguments: [CommandArgument] = [
