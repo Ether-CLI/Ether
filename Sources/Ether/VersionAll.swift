@@ -21,7 +21,6 @@
 // SOFTWARE.
 
 import Manifest
-import Console
 import Command
 
 public final class VersionAll: Command {

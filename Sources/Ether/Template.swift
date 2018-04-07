@@ -22,7 +22,6 @@
 
 import Foundation
 import Helpers
-import Console
 import Command
 
 public final class Template: Command {

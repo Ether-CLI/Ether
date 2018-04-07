@@ -24,7 +24,6 @@ import Foundation
 import Manifest
 import Helpers
 import Command
-import Console
 
 public final class New: Command {
     public var arguments: [CommandArgument] = [
