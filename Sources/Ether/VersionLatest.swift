@@ -1,52 +1,44 @@
-//// The MIT License (MIT)
-////
-//// Copyright (c) 2017 Caleb Kleveter
-////
-//// Permission is hereby granted, free of charge, to any person obtaining a copy
-//// of this software and associated documentation files (the "Software"), to deal
-//// in the Software without restriction, including without limitation the rights
-//// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//// copies of the Software, and to permit persons to whom the Software is
-//// furnished to do so, subject to the following conditions:
-////
-//// The above copyright notice and this permission notice shall be included in all
-//// copies or substantial portions of the Software.
-////
-//// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//// SOFTWARE.
+// The MIT License (MIT)
 //
-//// REGEX: \\.Package\\(url\\:\\s?\\\"https\\:\\/\\/github\\.com([\\d\\w\\:\\/\\.\\@\\-]+)\\.git\\\"\\,([\\d\\w\\s\\:])+\\)\\,?
+// Copyright (c) 2017 Caleb Kleveter
 //
-//import Console
-//import Helpers
-//import Foundation
-//import Core
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-//public final class VersionLatest: Command {
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+import Helpers
+import Command
+
+public final class VersionLatest: Command {
+    public var arguments: [CommandArgument] = []
+    
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate Xcode project after updating package versions"])
+    ]
+    
+    public var help: [String] = ["Updates all packeges to the latest version"]
+    
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        return context.container.eventLoop.newSucceededFuture(result: ())
+    }
+}
+
 //    public let id = "latest"
 //    public let baseURL = "https://packagecatalog.com/data/package"
-//    
-//    public var help: [String] = [
-//        "Updates all packeges to the latest version"
-//    ]
-//    
-//    public var signature: [Argument] = [
-//        Option(name: "xcode", short: "x", help: [
-//            "Regenerate Xcode project after updating package versions"
-//        ])
-//    ]
-//    
-//    public let console: ConsoleProtocol
-//    public let client = PackageJSONFetcher()
-//    
-//    public init(console: ConsoleProtocol) {
-//        self.console = console
-//    }
 //    
 //    public func run(arguments: [String]) throws {
 //        let updateBar = console.loadingBar(title: "Updating Package Versions")
