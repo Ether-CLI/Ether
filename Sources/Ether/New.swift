@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import Helpers
 import Command
 import Console
 import Async
@@ -73,8 +74,7 @@ public final class New: Command {
                 let current = manager.currentDirectoryPath
                 _ = try Process.execute("cp", ["-a", "\(templatePath)", "\(current)/\(name)"])
             } else {
-                fatalError("This command is not supported in macOS versions older then 10.12")
-                // throw EtherError.fail("This command is not supported in macOS versions older then 10.12")
+                throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
             }
             return true
         }

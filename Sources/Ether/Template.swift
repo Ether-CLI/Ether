@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import Helpers
 import Console
 import Command
 import Async
@@ -53,15 +54,15 @@ public final class Template: Command {
             let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
 
             if removeTemplate {
-                if !directoryExists { fatalError() }
+                if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
                 _ = try Process.execute("rm", ["-rm", "\(defaultPath)/\(name)"])
             } else {
-                if directoryExists { fatalError() }
+                if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
                 let current = manager.currentDirectoryPath + "/."
                 _ = try Process.execute("cp", ["-a", "\(current)", "\(defaultPath)/\(name)"])
             }
         } else {
-            fatalError()
+            throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
         }
         
         temapletBar.succeed()

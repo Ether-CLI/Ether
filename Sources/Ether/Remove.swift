@@ -22,6 +22,7 @@
 //
 
 import Manifest
+import Helpers
 import Console
 import Command
 import Async
@@ -45,7 +46,7 @@ public final class Remove: Command {
         let pinCount = try Manifest.current.resolved().object.pins.count
         
         guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first?.repositoryURL else {
-            fatalError()
+            throw EtherError(identifier: "pinNotFound", reason: "No package was found with the name '\(name)'")
         }
         try Manifest.current.dependency(withURL: url)?.delete()
         
