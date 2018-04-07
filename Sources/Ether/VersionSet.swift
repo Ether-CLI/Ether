@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Manifest
 import Command
 import Helpers
 
@@ -44,8 +45,36 @@ public final class VersionSet: Command {
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
-}
     
+    private func version(from options: [String: String], with version: String)throws -> DependencyVersionType {
+        if options["exact"] != nil {
+            return .exact(version)
+            
+        } else if options["up-to-next-major"] != nil {
+            return .upToNextMajor(version)
+            
+        } else if options["branch"] != nil {
+            return .branch(version)
+            
+        } else if options["revision"] != nil {
+            return .revision(version)
+            
+        } else if options["range"] != nil {
+            let pattern = try NSRegularExpression(pattern: "(.*?)(\\.\\.(?:\\.|<))(.*)", options: [])
+            guard let match = pattern.firstMatch(in: version, options: [], range: version.range) else {
+                throw EtherError(identifier: "badVersionStructure", reason: "The '--range' flag was passed in, but the version is not structured as a range")
+            }
+            let open = version.substring(at: match.range(at: 1))!
+            let `operator` = version.substring(at: match.range(at: 2))!
+            let close = version.substring(at: match.range(at: 3))!
+            
+            return .range("\"\(open)\"\(`operator`)\"\(close)\"")
+        }
+        
+        return .from(version)
+    }
+}
+
 //    public func run(arguments: [String]) throws {
 //        let updateBar = console.loadingBar(title: "Updating Package Version")
 //        updateBar.start()
@@ -77,20 +106,5 @@ public final class VersionSet: Command {
 //        }
 //        
 //        console.output("\(package) version was updated", style: .plain, newLine: true)
-//    }
-//    
-//    private func versionOption(from arguments: [String], with version: String) -> String {
-//        if arguments.option("from") != nil {
-//            return "from: \"\(version)\""
-//        } else if arguments.option("up-to-next-major") != nil {
-//            return ".upToNextMajor(from: \"\(version)\")"
-//        } else if arguments.option("range") != nil {
-//            return "\"\(version.dropLast(8))\"\(String(version.dropFirst(5)).dropLast(5))\"\(version.dropFirst(8))\""
-//        } else if arguments.option("branch") != nil {
-//            return ".branch(\"\(version)\")"
-//        } else if arguments.option("revision") != nil {
-//            return ".revision(\"\(version)\")"
-//        }
-//        return ".exact(\"\(version)\")"
 //    }
 //}
