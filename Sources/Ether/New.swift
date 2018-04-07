@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Foundation
+import Manifest
 import Helpers
 import Command
 import Console
@@ -56,8 +57,10 @@ public final class New: Command {
     func newExecutable(from context: CommandContext) throws -> Bool {
         if let _ = context.options["executable"] {
             let name = try context.argument("name")
-            let script = "mkdir \(name); cd \(name); swift package init --type=executable; ether clean-manifest"
+            let script = "mkdir \(name); cd \(name); swift package init --type=executable"
             _ = try Process.execute("bash", ["-c", script])
+            
+            try Manifest.current.reset()
             return true
         }
         return false
@@ -83,7 +86,8 @@ public final class New: Command {
     
     func newPackage(from context: CommandContext) throws {
         let name = try context.argument("name")
-        let script = "mkdir \(name); cd \(name); swift package init; ether clean-manifest"
+        let script = "mkdir \(name); cd \(name); swift package init"
         _ = try Process.execute("bash", ["-c", script])
+        try Manifest.current.reset()
     }
 }
