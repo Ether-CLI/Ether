@@ -11,7 +11,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Helpers", dependencies: ["Core", "Console"]),
-        .target(name: "Ether", dependencies: ["Helpers", "Console", "Command", "Manifest"]),
+        .target(name: "Ether", dependencies: ["Helpers", "Console", "Command", "Manifest", "Core"]),
         .target(name: "Executable", dependencies: ["Ether", "Console"])
     ]
 )
