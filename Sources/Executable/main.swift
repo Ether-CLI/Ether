@@ -26,6 +26,7 @@ import Ether
 var services = Services.default()
 
 var commands = CommandConfig()
+commands.use(Configuration(), as: "config")
 services.register(commands)
 
 try Application.asyncBoot(services: services).wait().run()

@@ -38,6 +38,8 @@ public class Configuration: Command {
     
     public var help: [String] = ["Configure custom actions to occure when a command is run"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let setter = context.console.loadingBar(title: "Setting Configuration Ket")
         _ = setter.start(on: context.container)
