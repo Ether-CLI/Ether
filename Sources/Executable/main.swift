@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Console
 import Vapor
 import Ether
 
@@ -29,4 +30,10 @@ var commands = CommandConfig()
 commands.use(Configuration(), as: "config")
 services.register(commands)
 
-try Application.asyncBoot(services: services).wait().run()
+do {
+    try Application.asyncBoot(services: services).wait().run()
+} catch {
+    print("Error:", error)
+    exit(1)
+}
+
