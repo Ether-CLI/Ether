@@ -28,6 +28,7 @@ var services = Services.default()
 
 var commands = CommandConfig()
 commands.use(Configuration(), as: "config")
+commands.use(FixInstall(), as: "fix-install")
 services.register(commands)
 
 do {

@@ -28,6 +28,8 @@ public final class FixInstall: Command {
     
     public var help: [String] = ["Fixes fetching errors that occur during package install"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         context.console.output("This may take some time...", style: .info)
         
