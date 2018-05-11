@@ -20,7 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Manifest
 import Command
+import Helpers
+import Vapor
 
 public final class Install: Command {
     public var arguments: [CommandArgument] = [
@@ -38,132 +41,194 @@ public final class Install: Command {
     
     public var help: [String] = ["Installs a package into the current project"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> Future<Void> {
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        context.console.info("Reading Package Targets...")
+        let targets = try Manifest.current.targets().map { $0.name }
+        let approvedTargets = self.inquireFor(targets: targets, in: context)
+        
+        let installing = context.console.loadingBar(title: "Installing Dependency")
+        
+        let oldPinCount: Int
+        
+        do {
+            oldPinCount = try Manifest.current.resolved().object.pins.count
+        } catch { oldPinCount = 0 }
+        
+        let name = try context.argument("name")
+        
+        context.console.info("Fetching Package Data...")
+        return try self.package(with: name, on: context).map(to: Void.self) { package in
+            _ = installing.start(on: context.container)
+            
+            let dependency = Dependency(url: package.url, version: .from(package.version))
+            try dependency.save()
+            
+            try approvedTargets.forEach { name in
+                guard let target = try Manifest.current.target(withName: name) else { return }
+                target.dependencies.append(contentsOf: package.products)
+                try target.save()
+            }
+            _ = try Process.execute("swift", "package", "update")
+            let newPinCount = try Manifest.current.resolved().object.pins.count
+            
+            installing.succeed()
+            
+            if let _ = context.options["xcode"] {
+                let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+                _ = xcodeBar.start(on: context.container)
+                
+                _ = try Process.execute("swift", "package", "generate-xcodeproj")
+                xcodeBar.succeed()
+                _ = try Process.execute("sh", "-c", "open *.xcodeproj")
+            }
+    
+            context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
+        }
+    }
+    
+    /// Asks the user if they want to add a dependency to the targets in the package manifest.
+    ///
+    /// - Parameter targets: The names of the targets available.
+    /// - Returns: The names of the targets that where accepted.
+    fileprivate func inquireFor(targets: [String], in context: CommandContext) -> [String] {
+        var acceptedTargets: [String] = []
+        var index = 0
+
+        if targets.count > 1 {
+            targetFetch: while index < targets.count {
+                let target = targets[index]
+                let response = context.console.ask(ConsoleText(stringLiteral: "Would you like to add the package to the target '\(target)'? (y,n,q,?)"))
+
+                switch response {
+                case "y":
+                    acceptedTargets.append(target)
+                    index += 1
+                case "n":
+                    index += 1
+                case "q":
+                    break targetFetch
+                default: context.console.output("""
+                y: Add the package as a dependency to the target.
+                n: Do not add the package as a dependency to the target.
+                q: Do not add the package as a dependency to the current target or any of the following targets.
+                ?: Output this message.
+                """, style: .info, newLine: true)
+                }
+            }
+        } else {
+            acceptedTargets.append(targets[0])
+        }
+
+        return acceptedTargets
+    }
+    
+    func package(with name: String, on context: CommandContext)throws -> Future<(url: String, version: String, products: [String])> {
+        let client = try context.container.make(Client.self)
+        guard let token = try Configuration.get().accessToken else {
+            throw EtherError(
+                identifier: "noAccessToken",
+                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
+            )
+        }
+        
+        let fullName: Future<String>
+        if name.contains("/") {
+            let url = "https://package.vapor.cloud/packages/\(name)"
+            fullName = client.get(url).flatMap(to: String.self) { response in
+                response.content.get(String.self, at: "full_name")
+            }
+        } else {
+            let search = "https://package.vapor.cloud/packages/search?name=\(name)"
+            fullName = client.get(search, headers: ["Authorization": "Bearer \(token)"]).flatMap(to: String.self) { response in
+                response.content.get(String.self, at: "repositories", 0, "nameWithOwner")
+            }
+        }
+        
+        let version = fullName.flatMap(to: String.self) { fullName in
+            let names = fullName.split(separator: "/").map(String.init)
+            return try self.version(owner: names[0], repo: names[1], token: token, on: context)
+        }.map(to: String.self) { version in
+            if version.first == "v" { return String(version.dropFirst()) }
+            return version
+        }
+        
+        let products = fullName.flatMap(to: [String].self) { fullName in
+            let names = fullName.split(separator: "/").map(String.init)
+            return try self.products(owner: names[0], repo: names[1], token: token, on: context)
+        }
+        
+        return map(to: (url: String, version: String, products: [String]).self, fullName, version, products) { name, version, products in
+            let url = "https://github.com/\(name).git"
+            return (url, version, products)
+        }
+    }
+    
+    fileprivate func version(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<String> {
+        let client = try context.container.make(Client.self)
+        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/releases", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [String].self) { response in
+            return try response.content.decode([String].self)
+        }.map(to: String.self) { releases in
+            guard let first = releases.first else {
+                throw EtherError(
+                    identifier: "noReleases",
+                    reason: "No tags where found for the selected package. You might want to open an issue on the package requesting a release."
+                )
+            }
+            
+            if first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha") {
+                let majorVersion = Int(String(first.first ?? "0")) ?? 0
+                if majorVersion > 0 && releases.count > 1 {
+                    var answer: String
+                    
+                    repeat {
+                        answer = context.console.ask(
+                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/n)")
+                            ).lowercased()
+                    } while answer != "y" || answer != "n"
+                    
+                    if answer == "y" {
+                        return releases.filter { Int(String($0.first ?? "0")) ?? 0 != majorVersion }.first ?? first
+                    } else {
+                        return first
+                    }
+                } else {
+                    return first
+                }
+            } else {
+                return first
+            }
+        }
+    }
+    
+    fileprivate func products(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<[String]> {
+        let client = try context.container.make(Client.self)
+        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/manifest", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [Product].self) { response in
+            return response.content.get([Product].self, at: "products")
+        }.map(to: [String].self) { products in
+            if let index = products.index(where: { $0.name.lowercased() == repo.lowercased() }) {
+                return [products[index].name]
+            }
+            if products.count < 1 { return [repo] }
+            
+            var allowed: [String]? = nil
+            
+            repeat {
+                let options = products.enumerated().map { return "\($0.offset). \($0.element)" }
+                let question = ["Unable to automatically detect product to add to target(s). Answer with comma seperated list of products to add"] + options
+                let seletions = context.console.ask(ConsoleText(stringLiteral: question.joined(separator: "\n")))
+                let indexes = seletions.split(separator: "\n").map(String.init).map { $0.trimmingCharacters(in: .whitespaces) }.compactMap(Int.init)
+                
+                let selected = products.enumerated().filter { indexes.contains($0.offset) }.map { $0.element.name }
+                if selected.count > 0 { allowed = selected }
+            } while allowed == nil
+            
+            return allowed!
+        }
     }
 }
 
-//    
-//    public func run(arguments: [String]) throws {
-//        console.output("Reading Package Targets...", style: .info, newLine: true)
-//        
-//        let fileManager = FileManager.default
-//        let name = try value("name", from: arguments)
-//        let installBar = console.loadingBar(title: "Installing Dependency")
-//        
-//        // Get package manifest and JSON data
-//        guard let manifestURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift") else {
-//            throw EtherError.fail("Bad path to package manifest. Make sure you are in the project root.")
-//        }
-//        guard let resolvedURL = URL(string: "file:\(fileManager.currentDirectoryPath)/Package.resolved") else {
-//            throw EtherError.fail("Bad path to package data. Make sure you are in the project root.")
-//        }
-//        let packageManifest = try String(contentsOf: manifestURL)
-//        let mutablePackageManifest = NSMutableString(string: packageManifest)
-//        let pinsCount: Int
-//        
-//        do {
-//            let packageData = try Data(contentsOf: resolvedURL).json()
-//            guard let object = packageData?["object"] as? APIJSON,
-//                  let pins = object["pins"] as? [APIJSON] else { return }
-//            pinsCount = pins.count
-//        } catch {
-//            pinsCount = 0
-//        }
-//        
-//        // Get the names of the targets to add the dependency to
-//        let targets = try Manifest.current.getTargets()
-//        let useTargets: [String] = inquireFor(targets: targets)
-//        
-//        installBar.start()
-//        
-//        let packageInstenceRegex = try NSRegularExpression(pattern: "(\\.package([\\w\\s\\d\\,\\:\\(\\)\\@\\-\\\"\\/\\.])+\\)),?(?:\\R?)", options: .anchorsMatchLines)
-//        let dependenciesRegex = try NSRegularExpression(pattern: "products: *\\[(?s:.*?)\\],\\s*dependencies: *\\[", options: .anchorsMatchLines)
-//        
-//        // Get the data for the package to install
-//        let newPackageData = try Manifest.current.getPackageData(for: name)
-//        let packageVersion = arguments.options["version"] ?? newPackageData.version
-//        let packageUrl = arguments.options["url"] ?? newPackageData.url
-//        
-//        let packageInstance = "$1,\n        .package(url: \"\(packageUrl)\", .exact(\"\(packageVersion)\"))\n"
-//        let depPackageInstance = "$0\n        .package(url: \"\(packageUrl)\", .exact(\"\(packageVersion)\"))"
-//        
-//        // Add the new package instance to the Package dependencies array.
-//        if packageInstenceRegex.matches(in: packageManifest, options: [], range: NSMakeRange(0, packageManifest.utf8.count)).count > 0  {
-//            packageInstenceRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: packageInstance)
-//        } else {
-//            dependenciesRegex.replaceMatches(in: mutablePackageManifest, options: [], range: NSMakeRange(0, mutablePackageManifest.length), withTemplate: depPackageInstance)
-//        }
-//        
-//        // Write the new package manifest to the Package.swift file
-//        try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-//        
-//        // Update the packages.
-//        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-//        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-//        
-//        // Get the new package name and add it to the previously accepted targets.
-//        let dependencyName = try Manifest.current.getPackageName(for: newPackageData.url)
-//        for target in useTargets {
-//            try mutablePackageManifest.addDependency(dependencyName, to: target)
-//        }
-//        
-//        // Write the Package.swift file again
-//        try String(mutablePackageManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-//        
-//        // Calculate the number of package that where installed and output it.
-//        let packageData = try Data(contentsOf: resolvedURL).json()
-//        guard let object = packageData?["object"] as? APIJSON,
-//            let pins = object["pins"] as? [APIJSON] else { return }
-//        
-//        let newPackageCount = pins.count - pinsCount
-//        
-//        installBar.finish()
-//        
-//        if let _ = arguments.options["xcode"] {
-//            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-//            xcodeBar.start()
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-//            xcodeBar.finish()
-//            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
-//        }
-//        
-//        console.output("📦  \(newPackageCount) packages installed", style: .plain, newLine: true)
-//    }
-//    
-//    /// Asks the user if they want to add a dependency to the targets in the package manifest.
-//    ///
-//    /// - Parameter targets: The names of the targets available.
-//    /// - Returns: The names of the targets that where accepted.
-//    fileprivate func inquireFor(targets: [String]) -> [String] {
-//        var acceptedTargets: [String] = []
-//        var index = 0
-//        
-//        if targets.count > 1 {
-//            targetFetch: while index < targets.count {
-//                let target = targets[index]
-//                let response = console.ask("Would you like to add the package to the target '\(target)'? (y,n,q,?)")
-//                
-//                switch response {
-//                case "y":
-//                    acceptedTargets.append(target)
-//                    index += 1
-//                case "n":
-//                    index += 1
-//                case "q":
-//                    break targetFetch
-//                default: console.output("""
-//                y: Add the package as a dependency to the target.
-//                n: Do not add the package as a dependency to the target.
-//                q: Do not add the package as a dependency to the current target or any of the following targets.
-//                ?: Output this message.
-//                """, style: .info, newLine: true)
-//                }
-//            }
-//        } else {
-//            acceptedTargets.append(targets[0])
-//        }
-//        
-//        return acceptedTargets
-//    }
-//}
+struct Product: Content {
+    let name: String
+}
