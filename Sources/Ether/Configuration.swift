@@ -28,7 +28,7 @@ import Core
 import Bits
 
 public class Configuration: Command {
-    public static let configPath = "/Library/Application\\ Support/Ether/config.json"
+//    public static let configPath = "/Library/Application\\ Support/Ether/config.json"
     
     public var arguments: [CommandArgument] = [
         CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
@@ -65,9 +65,15 @@ public class Configuration: Command {
     
     public static func get()throws -> Config {
         let user = try Process.execute("whoami")
-        let url = "file:/Users/\(user)\(configPath)"
+        let configuration: Data
         
-        let configuration = FileManager.default.contents(atPath: url) ?? Data([.leftCurlyBracket, .rightCurlyBracket])
+        let contents = try Data(contentsOf: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
+        if contents.count > 0 {
+            configuration = contents
+        } else {
+            configuration = Data([.leftCurlyBracket, .rightCurlyBracket])
+        }
+        
         return try JSONDecoder().decode(Config.self, from: configuration)
     }
 }
