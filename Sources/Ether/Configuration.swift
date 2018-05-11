@@ -25,9 +25,10 @@ import Console
 import Command
 import Helpers
 import Core
+import Bits
 
 public class Configuration: Command {
-    public static let configPath = "/Library/Application Support/Ether/config.json"
+    public static let configPath = "/Library/Application\\ Support/Ether/config.json"
     
     public var arguments: [CommandArgument] = [
         CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
@@ -41,36 +42,40 @@ public class Configuration: Command {
     public init() {}
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
-        let setter = context.console.loadingBar(title: "Setting Configuration Ket")
+        let setter = context.console.loadingBar(title: "Setting Configuration Key")
         _ = setter.start(on: context.container)
         
         let key = try context.argument("key")
         let value = try context.argument("value")
+        let user = try Process.execute("whoami")
         
         var configuration = try Configuration.get()
+        
         guard let property = Config.properties[key] else {
             throw EtherError(identifier: "noSettingWithName", reason: "No configuration setting found with name '\(key)'")
         }
         
         configuration[keyPath: property] = value
-        try JSONEncoder().encode(configuration).write(to: URL(string: "file:\(Configuration.configPath)")!)
+        
+        try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
         
         setter.succeed()
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
     public static func get()throws -> Config {
-        guard let configuration = FileManager.default.contents(atPath: "file:\(configPath)") else {
-            throw EtherError(identifier: "fileNotFound", reason: "File at path '\(configPath)' not found")
-        }
+        let user = try Process.execute("whoami")
+        let url = "file:/Users/\(user)\(configPath)"
+        
+        let configuration = FileManager.default.contents(atPath: url) ?? Data([.leftCurlyBracket, .rightCurlyBracket])
         return try JSONDecoder().decode(Config.self, from: configuration)
     }
 }
 
 public struct Config: Codable, Reflectable {
-    public var accessToken: String
+    public var accessToken: String?
     
-    static let properties: [String: WritableKeyPath<Config, String>] = [
+    static let properties: [String: WritableKeyPath<Config, String?>] = [
         "access-token": \.accessToken
     ]
 }
