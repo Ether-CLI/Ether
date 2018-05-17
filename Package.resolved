@@ -47,6 +47,15 @@
         }
       },
       {
+        "package": "JSON",
+        "repositoryURL": "https://github.com/soffes/JSON.git",
+        "state": {
+          "branch": null,
+          "revision": "7e79307da7605e493920535bcac0f810252f1f4b",
+          "version": "0.1.2"
+        }
+      },
+      {
         "package": "Manifest",
         "repositoryURL": "https://github.com/Ether-CLI/Manifest.git",
         "state": {
@@ -115,6 +124,15 @@
         "state": {
           "branch": null,
           "revision": "37760e9a52030bb9011972c5213c3350fa9d41fd",
+          "version": "1.0.0"
+        }
+      },
+      {
+        "package": "SwiftySound",
+        "repositoryURL": "https://github.com/adamcichy/SwiftySound.git",
+        "state": {
+          "branch": null,
+          "revision": "cbf228cb643a7e6ed4d7e7f4012d247f2844f97b",
           "version": "1.0.0"
         }
       },

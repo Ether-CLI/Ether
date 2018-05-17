@@ -43,6 +43,33 @@ public final class VersionSet: Command {
     public var help: [String] = ["Changes the version of a single dependency"]
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let updating = context.console.loadingBar(title: "Updating Package Version")
+        _ = updating.start(on: context.container)
+        
+        let package = try context.argument("name")
+        let version = try context.argument("version")
+        let versionLitteral = self.versionOption(from: context.options, with: version)
+        
+        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == package }).first?.repositoryURL else {
+            throw EtherError(identifier: "pinNotFound", reason: "No pin entry found for package name '\(package)'")
+        }
+        guard let dependency = try Manifest.current.dependency(withURL: url) else {
+            throw EtherError(identifier: "packageNotFound", reason: "No package found with URL '\(url)'")
+        }
+        dependency.version = versionLitteral
+        try dependency.save()
+        
+        _ = Process.execute("swift", "package", "update")
+        updating.succeed()
+
+        if let _ = context.options["xcode"] {
+            let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+            _ = xcodeBar.start(on: context.container)
+            _ = try Process.execute("swift", "package", "generate-xcodeproj")
+            xcodeBar.succeed()
+            _ = try Process.execute("/bin/sh", "-c", "open *.xcodeproj")
+        }
+        
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
@@ -74,37 +101,3 @@ public final class VersionSet: Command {
         return .from(version)
     }
 }
-
-//    public func run(arguments: [String]) throws {
-//        let updateBar = console.loadingBar(title: "Updating Package Version")
-//        updateBar.start()
-//        
-//        let package = try value("name", from: arguments)
-//        let version = try value("version", from: arguments)
-//        let versionLitteral = versionOption(from: arguments, with: version)
-//        
-//        let url = try Manifest.current.getPackageUrl(for: package)
-//        let manifest = try NSMutableString(string: Manifest.current.get())
-//        let pattern = try NSRegularExpression(
-//            pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(\\),?\\n)",
-//            options: []
-//        )
-//        pattern.replaceMatches(in: manifest, options: [], range: NSMakeRange(0, manifest.length), withTemplate: "$1\(versionLitteral)$3")
-//        try Manifest.current.write(String(manifest))
-//        
-//        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-//        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-//        
-//        updateBar.finish()
-//        
-//        if let _ = arguments.options["xcode"] {
-//            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-//            xcodeBar.start()
-//            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-//            xcodeBar.finish()
-//            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
-//        }
-//        
-//        console.output("\(package) version was updated", style: .plain, newLine: true)
-//    }
-//}
