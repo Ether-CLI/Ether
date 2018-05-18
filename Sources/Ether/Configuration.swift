@@ -28,8 +28,6 @@ import Core
 import Bits
 
 public class Configuration: Command {
-//    public static let configPath = "/Library/Application\\ Support/Ether/config.json"
-    
     public var arguments: [CommandArgument] = [
         CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in"])
