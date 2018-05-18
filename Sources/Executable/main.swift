@@ -24,6 +24,15 @@ import Console
 import Vapor
 import Ether
 
+let version = "2018.05.18"
+
+let arguments = CommandLine.arguments
+if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
+    let terminal = Terminal()
+    terminal.output("Ether Version: \(version)", style: .info, newLine: true)
+    exit(0)
+}
+
 var services = Services.default()
 
 let versions = Commands(
