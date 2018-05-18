@@ -61,12 +61,10 @@ public final class Search: Command {
         }
         
         let response = client.get("https://package.vapor.cloud/packages/search?name=\(name)&limit=\(max)", headers: ["Authorization": "Bearer \(token)"])
-        return response.flatMap(to: [String: [PackageDescription]].self) { response in
-            return try response.content.decode([String: [PackageDescription]].self)
-        }.map(to: Void.self) { json in
-            guard let packages = json["repositories"] else {
-                throw EtherError(identifier: "badResponseStructure", reason: "Unable to parse package representations from JSON response")
-            }
+        return response.flatMap(to: [PackageDescription].self) { response in
+            searching.succeed()
+            return response.content.get([PackageDescription].self, at: "repositories")
+        }.map(to: Void.self) { packages in
             packages.forEach { package in
                 package.print(on: context)
                 context.console.print()
@@ -77,15 +75,24 @@ public final class Search: Command {
 
 struct PackageDescription: Codable {
     let nameWithOwner: String
-    let description: String
-    let license: String
-    let stargazers: Int
+    let description: String?
+    let license: String?
+    let stargazers: Int?
     
     func print(on context: CommandContext) {
-        context.console.output(self.nameWithOwner + ": ", style: .info, newLine: false)
-        context.console.print(self.description)
-        context.console.print("License: " + self.license)
-        context.console.print("Stars: " + String(self.stargazers))
+        if let description = self.description {
+            context.console.info(nameWithOwner + ": ", newLine: false)
+            context.console.print(description)
+        } else {
+            context.console.info(self.nameWithOwner)
+        }
         
+        if let license = self.license {
+            context.console.print("License: " + license)
+        }
+        
+        if let stars = self.stargazers {
+             context.console.print("Stars: " + String(stars))
+        }
     }
 }
