@@ -1,13 +1,6 @@
 version: 2
 
 jobs:
-  macos:
-    macos:
-      xcode: "9.2"
-    steps:
-      - checkout
-      - run: swift build
-      - run: swift test
   linux:
     docker:
       - image: codevapor/swift:4.1
