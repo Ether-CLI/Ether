@@ -33,7 +33,7 @@ curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | b
 
 ### How do I make my package available?
 
-Ether uses IBM's [Swift Package Catalog](https://packagecatalog.com/) to search and install packages. Add your packages to it so they can be accessed.
+If they are on GitHub, they already are! Ether uses GitHub's GraphQL API to fetch projects with a `Package.swift` file in the project root.
 
 ### What license is it under?
 
