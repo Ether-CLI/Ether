@@ -44,10 +44,17 @@ public final class Remove: Command {
         let name = try context.argument("name")
         let pinCount = try Manifest.current.resolved().object.pins.count
         
-        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first?.repositoryURL else {
+        guard let pin = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first else {
             throw EtherError(identifier: "pinNotFound", reason: "No package was found with the name '\(name)'")
         }
-        try Manifest.current.dependency(withURL: url)?.delete()
+        
+        try Manifest.current.dependency(withURL: pin.repositoryURL)?.delete()
+        try Manifest.current.targets().filter { $0.dependencies.contains(pin.package) }.forEach { target in
+            if let index = target.dependencies.index(of: pin.package) {
+                target.dependencies.remove(at: index)
+                try target.save()
+            }
+        }
         
         _ = try Process.execute("swift", ["package", "update"])
         _ = try Process.execute("swift", ["package", "resolve"])
