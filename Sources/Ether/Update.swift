@@ -32,6 +32,8 @@ public final class Update: Command {
     
     public var help: [String] = ["Updates a project's dependencies."]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         if context.options["ether"] != nil {
             let updating = context.console.loadingBar(title: "Updating Ether")

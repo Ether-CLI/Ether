@@ -38,6 +38,8 @@ public final class New: Command {
     
     public var help: [String] = ["Creates a new project"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let newProject = context.console.loadingBar(title: "Generating Project")
         _ = newProject.start(on: context.container)

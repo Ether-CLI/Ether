@@ -35,6 +35,8 @@ public final class VersionLatest: Command {
     
     public var help: [String] = ["Updates all packeges to the latest version"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let updating = context.console.loadingBar(title: "Updating Version Versions")
         _ = updating.start(on: context.container)

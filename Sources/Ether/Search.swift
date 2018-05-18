@@ -39,6 +39,8 @@ public final class Search: Command {
     
     public var help: [String] = ["Searches for availible packages."]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let searching = context.console.loadingBar(title: "Searching")
         _ = searching.start(on: context.container)

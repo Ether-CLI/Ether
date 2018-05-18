@@ -35,6 +35,8 @@ public final class Remove: Command {
     
     public var help: [String] = ["Removes a package from the manifest and uninstalls it"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let removing = context.console.loadingBar(title: "Removing Dependency")
         _ = removing.start(on: context.container)

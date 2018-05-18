@@ -42,6 +42,8 @@ public final class VersionSet: Command {
     
     public var help: [String] = ["Changes the version of a single dependency"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let updating = context.console.loadingBar(title: "Updating Package Version")
         _ = updating.start(on: context.container)

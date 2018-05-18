@@ -26,10 +26,28 @@ import Ether
 
 var services = Services.default()
 
+let versions = Commands(
+    commands: [
+        "all": VersionAll(),
+        "latest": VersionLatest(),
+        "set": VersionSet()
+    ],
+    defaultCommand: "all"
+).group(help: [
+    "For interacting with dependency versions"
+])
+
 var commands = CommandConfig()
 commands.use(Configuration(), as: "config")
 commands.use(FixInstall(), as: "fix-install")
 commands.use(Install(), as: "install")
+commands.use(New(), as: "new")
+commands.use(Remove(), as: "remove")
+commands.use(Search(), as: "search")
+commands.use(Template(), as: "template")
+commands.use(Update(), as: "update")
+commands.use(versions, as: "version")
+
 services.register(commands)
 
 do {

@@ -36,6 +36,8 @@ public final class Template: Command {
     
     public var help: [String] = ["Creates and stores a template for use as the starting point of a project."]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let name = try context.argument("name")
         let removeTemplate = context.options["remove"] == nil ? false : true

@@ -30,6 +30,8 @@ public final class VersionAll: Command {
     
     public var help: [String] = ["Outputs the name of each package installed and its version"]
     
+    public init() {}
+    
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         context.console.output("Getting Package Data...", style: .success)
         
