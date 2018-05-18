@@ -41,7 +41,8 @@ public final class VersionLatest: Command {
         let updating = context.console.loadingBar(title: "Updating Version Versions")
         _ = updating.start(on: context.container)
         
-        let regex = try NSRegularExpression(pattern: ".*?\\.com\\/(.*?)\\.git", options: [])
+        let namePattern = try NSRegularExpression(pattern: ".*?\\.com\\/(.*?)\\.git", options: [])
+        let tagPattern = try NSRegularExpression(pattern: "v?\\d+(?:\\.\\d+)?(?:\\.\\d+)?", options: [])
         let client = try context.container.make(Client.self)
         
         guard let token = try Configuration.get().accessToken else {
@@ -52,13 +53,21 @@ public final class VersionLatest: Command {
         }
         
         let packageNames = try Manifest.current.dependencies().compactMap { dependency -> (fullName: String, url: String)? in
-            guard let result = regex.firstMatch(in: dependency.url, options: [], range: NSMakeRange(0, dependency.url.utf8.count)) else { return nil }
-            return (regex.replacementString(for: result, in: dependency.url, offset: 0, template: "$1"), dependency.url)
+            guard let result = namePattern.firstMatch(in: dependency.url, options: [], range: NSMakeRange(0, dependency.url.utf8.count)) else { return nil }
+            return (namePattern.replacementString(for: result, in: dependency.url, offset: 0, template: "$1"), dependency.url)
         }
         let versions = packageNames.map { $0.fullName }.map { name in
             return client.get("https://package.vapor.cloud/packages/\(name)/releases", headers: ["Authorization": "Bearer \(token)"]).flatMap { response in
                 return try response.content.decode([String].self)
-            }.map { releases in releases.first }
+            }.map { releases -> String? in
+                for tag in releases {
+                    let tagRange = NSMakeRange(0, tag.utf8.count)
+                    if tagRange == tagPattern.rangeOfFirstMatch(in: tag, options: [], range: tagRange) {
+                        return tag
+                    }
+                }
+                return nil
+            }
         }.flatten(on: context.container)
         
         return versions.map(to: Void.self) { versions in
