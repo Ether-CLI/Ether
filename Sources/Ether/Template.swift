@@ -55,7 +55,7 @@ public final class Template: Command {
 
             if removeTemplate {
                 if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
-                _ = try Process.execute("rm", ["-rm", "\(defaultPath)/\(name)"])
+                _ = try Process.execute("rm", ["-rf", "\(defaultPath)/\(name)"])
             } else {
                 if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
                 let current = manager.currentDirectoryPath + "/."
