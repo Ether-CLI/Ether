@@ -20,59 +20,55 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
+import Command
 
 public final class Update: Command {
-    public let id = "update"
-
-    public let signature: [Argument] = [
-        Option(name: "self", short: "s", help: [
-            "Updates Ether"
-        ]),
-        Option(name: "xcode", short: "x", help: [
-            "Regenerate and open the Xcode project after update its packages"
-        ])
+    public var arguments: [CommandArgument] = []
+    
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "ether", short: "e", help: ["Updates Ether CLI"]),
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate and open the Xcode project after updating packages"])
     ]
-
-    public let help: [String] = [
-        "Updates your dependencies."
-    ]
-
-    public let console: ConsoleProtocol
-
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
-
-    public func run(arguments: [String]) throws {
-        if let _ = arguments.option("self") {
-            let updateBar = console.loadingBar(title: "Updating Ether")
-            updateBar.start()
-            _ = try console.backgroundExecute(program: "/bin/sh", arguments: ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
-            updateBar.finish()
-            self.printEtherArt()
+    
+    public var help: [String] = ["Updates a project's dependencies."]
+    
+    public init() {}
+    
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        if context.options["ether"] != nil {
+            let updating = context.console.loadingBar(title: "Updating Ether")
+            _ = updating.start(on: context.container)
+            
+            _ = try Process.execute("bash", ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
+            
+            updating.succeed()
+            self.printEtherArt(with: context.console)
         } else {
-            console.output("This may take some time...", style: .info, newLine: true)
+            context.console.output("This may take some time...", style: .info, newLine: true)
+
+            let updating = context.console.loadingBar(title: "Updating Packages")
+            _ = updating.start(on: context.container)
             
-            let updateBar = console.loadingBar(title: "Updating Packages")
-            updateBar.start()
-            _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
-            updateBar.finish()
+            _ = try Process.execute("swift", ["package", "update"])
+            _ = try Process.execute("swift", ["package", "resolve"])
             
-            if let _ = arguments.options["xcode"] {
-                let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-                xcodeBar.start()
-                _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-                xcodeBar.finish()
-                try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+            updating.succeed()
+
+            if context.options["xcode"] != nil {
+                let xcode = context.console.loadingBar(title: "Generating Xcode Project")
+                _ = xcode.start(on: context.container)
+                
+                _ = try Process.execute("swift", ["package", "generate-xcodeproj"])
+                
+                xcode.succeed()
+                _ = try Process.execute("/bin/sh", ["-c", "open *.xcodeproj"])
             }
         }
+        
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
-
-    private func printEtherArt() {
+    
+    private func printEtherArt(with console: Console) {
         let etherArt = """
           | • |
           | • |
@@ -89,7 +85,7 @@ public final class Update: Command {
             let style: ConsoleStyle
 
             if let color = characterColors[character] {
-                style = .custom(color)
+                style = ConsoleStyle(color: color)
             } else {
                 style = .plain
             }
@@ -101,5 +97,4 @@ public final class Update: Command {
         console.print()
         console.output(console.center("Thanks for Updating Ether!"), style: .plain, newLine: true)
     }
-
 }

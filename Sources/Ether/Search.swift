@@ -21,96 +21,78 @@
 // SOFTWARE.
 
 import Helpers
+import Command
 import Console
-import Foundation
-import Core
+import Vapor
 
 public final class Search: Command {
-    public let id = "search"
-    
-    public let baseURL = "https://packagecatalog.com/api/search/"
-    public let sort = "chart"
-    public let results = "items"
-    
-    public var help: [String] = [
-        "Searches for availible packages."
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name of the package to search for."])
     ]
     
-    public var signature: [Argument] = [
-        Value(name: "name", help: [
-            "The name of the package to search for."
-        ]),
-        Option(name: "max-results", help: [
-            "The maximum number of results that will be returned.",
-            "This defaults to 20."
-        ]),
-        Option(name: "sort", help: [
-            "The sorting method to use:",
-            "moststarred (Most Starred)",
-            "leaststarred (Least Starred)",
-            "mostrecent (Most Recent)",
-            "leastrecent (Least Recent)",
-            "The default value is moststarred."
-        ])
+    public var options: [CommandOption] = [
+        CommandOption.value(name: "max-results", default: "20", help: [
+                "The maximum number of results that will be returned.",
+                "This defaults to 20."
+            ])
     ]
     
-    public let console: ConsoleProtocol
-    public let client = PackageJSONFetcher()
+    public var help: [String] = ["Searches for availible packages."]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
+    public init() {}
+    
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let searching = context.console.loadingBar(title: "Searching")
+        _ = searching.start(on: context.container)
+        
+        let client = try context.container.make(Client.self)
+        let name = try context.argument("name")
+        let maxResults = context.options["max-results"] ?? "20"
+        let config = try Configuration.get()
+        
+        guard let max = Int(maxResults), max <= 100 && max > 0 else {
+            throw EtherError(identifier: "badMaxResults", reason: "`max-results` value must be an integer, less than or equal to 100, and greater than 0")
+        }
+        guard let token = config.accessToken else {
+            throw EtherError(
+                identifier: "noAccessToken",
+                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
+            )
+        }
+        
+        let response = client.get("https://package.vapor.cloud/packages/search?name=\(name)&limit=\(max)", headers: ["Authorization": "Bearer \(token)"])
+        return response.flatMap(to: [PackageDescription].self) { response in
+            searching.succeed()
+            return response.content.get([PackageDescription].self, at: "repositories")
+        }.map(to: Void.self) { packages in
+            packages.forEach { package in
+                package.print(on: context)
+                context.console.print()
+            }
+        }
     }
-    
-    public func run(arguments: [String]) throws {
-        let searchingBar = console.loadingBar(title: "Searching")
-        searchingBar.start()
-        
-        let name = try value("name", from: arguments)
-        let maxResults = arguments.options["max-results"] ?? "20"
-        let sortMethod = arguments.options["sort"] ?? "moststarred"
-        
-        func fail(_ message: String) -> Error {
-            searchingBar.fail()
-            return EtherError.fail(message)
-        }
-        
-        var totalResults: Int?
-        var maxedResults: Bool?
-        var packages: [(name: String?, description: String?)]?
-        
-        let json = try self.client.get(from: self.baseURL + name, withParameters: [self.sort: sortMethod, self.results: maxResults])
-        
-        guard let data = json["data"] as? APIJSON else { throw fail("Bad JSON key") }
-        guard let hits = data["hits"] as? APIJSON else { throw fail("Bad JSON key") }
-        guard let results = hits["hits"] as? [APIJSON] else { throw fail("Bad JSON key") }
-        
-        packages = try results.map { (result) -> (name: String?, description: String?) in
-            guard let source = result["_source"] as? APIJSON else { throw fail("Bad JSON key") }
-            return (name: source["package_full_name"] as? String, description: source["description"] as? String)
-        }
-        
-        maxedResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))! > Int(maxResults)!
-        totalResults = Int(String(describing: hits["total"] ?? 0 as AnyObject))
+}
 
-        searchingBar.finish()
-        
-        self.console.output("Total results: \(totalResults ?? 0)", style: .info, newLine: true)
-        
-        if let maxedResults = maxedResults {
-            if maxedResults {
-                self.console.output("Not all results are shown.", style: .info, newLine: true)
-            }
+struct PackageDescription: Codable {
+    let nameWithOwner: String
+    let description: String?
+    let license: String?
+    let stargazers: Int?
+    
+    func print(on context: CommandContext) {
+        if let description = self.description {
+            context.console.info(nameWithOwner + ": ", newLine: false)
+            context.console.print(description)
+        } else {
+            context.console.info(self.nameWithOwner)
         }
-        if (totalResults ?? 0) > 0 {
-            console.output(String(repeating: "-", count: console.size.width), style: .info, newLine: true)
-            console.output("", style: .info, newLine: true)
+        
+        if let license = self.license {
+            context.console.print("License: " + license)
         }
-        if let packages = packages {
-            for package in packages {
-                self.console.output("\(package.name ?? "N/A"): ", style: .custom(.green), newLine: false)
-                self.console.output("\(package.description ?? "N/A")", style: .custom(.white), newLine: true)
-                console.output("", style: .info, newLine: true)
-            }
+        
+        if let stars = self.stargazers {
+             context.console.print("Stars: " + String(stars))
         }
     }
 }

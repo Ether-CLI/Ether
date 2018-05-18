@@ -22,149 +22,64 @@
 
 import Foundation
 import Console
+import Command
 import Helpers
-import JSON
+import Core
+import Bits
 
 public class Configuration: Command {
-    public let id: String = "config"
-    public let configPath = "/Library/Application Support/Ether/config.json"
-    
-    public let signature: [Argument] = [
-       Value(name: "key", help: [
-            "The configuration JSON key to set"
-        ]),
-       Value(name: "value", help: [
-            "The new value for the key passed in"
-        ])
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
+        CommandArgument.argument(name: "value", help: ["The new value for the key passed in"])
     ]
     
-    public let help: [String] = [
-        "Configure custom actions to occure when a command is run",
-        "Run `config help` to get information on expected data for the command options"
-    ]
+    public var options: [CommandOption] = []
     
-    public let console: ConsoleProtocol
+    public var help: [String] = ["Configure custom actions to occure when a command is run"]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
+    public init() {}
+    
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let setter = context.console.loadingBar(title: "Setting Configuration Key")
+        _ = setter.start(on: context.container)
+        
+        let key = try context.argument("key")
+        let value = try context.argument("value")
+        let user = try Process.execute("whoami")
+        
+        var configuration = try Configuration.get()
+        
+        guard let property = Config.properties[key] else {
+            throw EtherError(identifier: "noSettingWithName", reason: "No configuration setting found with name '\(key)'")
+        }
+        
+        configuration[keyPath: property] = value
+        
+        try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
+        
+        setter.succeed()
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
-    public func run(arguments: [String]) throws {
-        let setBar = console.loadingBar(title: "Setting Configuration Key")
-        setBar.start()
+    public static func get()throws -> Config {
+        let user = try Process.execute("whoami")
+        let configuration: Data
         
-        let fileManager = FileManager.default
-        let key = try value("key", from: arguments)
-        let val: String
-        
-        do {
-            val = try value("value", from: arguments)
-        } catch {
-            if key == "help" { printHelp() }
-            return
+        let contents = try Data(contentsOf: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
+        if contents.count > 0 {
+            configuration = contents
+        } else {
+            configuration = Data([.leftCurlyBracket, .rightCurlyBracket])
         }
         
-        guard let jsonPath = ConfigurationKey.getKey(from: key)?.jsonPath else {
-            throw fail(bar: setBar, with: "Unable to get JSON path for specified key")
-        }
-        guard let configURL = URL(string: "file:\(fileManager.currentDirectoryPath)\(configPath)") else {
-            throw fail(bar: setBar, with: "Unable to create path to config file")
-        }
-        
-        let jsonData = try Data(contentsOf: configURL).makeBytes()
-        var json = try JSON(bytes: jsonData)
-        try self.set(jsonPath, with: val, in: &json)
-        
-        try Data(bytes: json.makeBytes()).write(to: configURL)
-        
-        setBar.finish()
-    }
-    
-    fileprivate func printHelp() {
-        let help = """
-        Below are the keys, values, and expected types for the configuration JSON.
-
-        id |      key       | value-type |                       description
-        ---+----------------+------------+-------------------------------------------------------------
-         0 |     use-git    |    Bool    | Wheather to run git commands when a project is written to
-         1 | install-commit |   String   | The message to use when committing after an installation
-         2 |  remove-commit |   String   | The message to use when committing after a package removal
-         3 |  latest-commit |   String   | The message to use when all packages are updated to their
-           |                |            | latest versions
-         4 |    new-commit  |   String   | The message to use when committing a newly generated project
-
-        When a commit is made, there are variables that can be replaced for more specific messages.
-        Below are the variables, their values, and the config ID that they belong to:
-
-        id | var |    description
-        ---+-----+--------------------
-         1 | $0  | The package name
-         1 | $1  | The package version
-         2 | $0  | The package name
-         4 | $0  | The project name
-         4 | $1  | The package type
-        """
-        console.output(help, style: .plain, newLine: true)
-    }
-    
-    fileprivate func set(_ path: [String], with val: Any?, `in` json: inout JSON)throws {
-        var jsons: [(key: String, json: JSON)] = []
-        var top: JSON = JSON()
-        var sub: JSON = JSON()
-        
-        if path.count < 1 { return }
-        for key in path {
-            try jsons.append((key: key, json: json.get(key)))
-        }
-        if jsons.count == 0 { return }
-        else if jsons.count == 1 {
-            top = jsons[0].json
-            try top.set(path[0], val)
-            json = top
-            return
-        }
-        
-        for index in Array(0...jsons.count-1).reversed() {
-            sub = jsons[index].json
-            
-            if index == jsons.count-1 {
-                // Force-unwrapping always succedes because we tested for the path count earlier.
-                try sub.set(path.last!, val)
-            } else if index > 0 {
-                top = jsons[index].json
-                try top.set(jsons[index].key, sub)
-            } else {
-                json = top
-            }
-        }
+        return try JSONDecoder().decode(Config.self, from: configuration)
     }
 }
 
-fileprivate enum ConfigurationKey {
-    case useGit
-    case gitInstallMessage
-    case gitRemoveMessage
-    case gitLatestMessage
-    case gitNewMessage
+public struct Config: Codable, Reflectable {
+    public var accessToken: String?
     
-    var jsonPath: [String] {
-        switch self {
-        case .useGit: return ["git", "use"]
-        case .gitInstallMessage: return ["git", "commit-messages", "install"]
-        case .gitRemoveMessage: return ["git", "commit-message", "remove"]
-        case .gitLatestMessage: return ["git", "commit-message", "version-latest"]
-        case .gitNewMessage: return ["git", "commit-message", "new"]
-        }
-    }
-    
-    static func getKey(from string: String) -> ConfigurationKey? {
-        switch string.lowercased() {
-        case "use-git": return .useGit
-        case "install-commit": return .gitInstallMessage
-        case "remove-commit": return .gitRemoveMessage
-        case "latest-commit": return .gitLatestMessage
-        case "new-commit": return .gitNewMessage
-        default: return nil
-        }
-    }
+    static let properties: [String: WritableKeyPath<Config, String?>] = [
+        "access-token": \.accessToken
+    ]
 }

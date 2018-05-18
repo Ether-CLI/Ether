@@ -20,75 +20,58 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Manifest
 import Helpers
-import Console
-import Foundation
+import Command
 
 public final class Remove: Command {
-    public let id = "remove"
-    
-    public var help: [String] = [
-        "Removes and uninstalls a package"
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name of the package that will be removed"])
     ]
     
-    public var signature: [Argument] = [
-        Value(name: "name", help: [
-            "The name of the package that will be removed"
-        ]),
-        Option(name: "xcode", short: "x", help: [
-            "Regenerate the Xcode project after removing the package"
-        ])
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate the Xcode project after removing the package"])
     ]
     
-    public let console: ConsoleProtocol
+    public var help: [String] = ["Removes a package from the manifest and uninstalls it"]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
+    public init() {}
     
-    public func run(arguments: [String]) throws {
-        let removingProgressBar = console.loadingBar(title: "Removing Dependency")
-        removingProgressBar.start()
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let removing = context.console.loadingBar(title: "Removing Dependency")
+        _ = removing.start(on: context.container)
         
-        let manager = FileManager.default
-        let name = try value("name", from: arguments)
-        let url = try Manifest.current.getPackageUrl(for: name)
+        let name = try context.argument("name")
+        let pinCount = try Manifest.current.resolved().object.pins.count
         
-        let regex = try NSRegularExpression(pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(?=,?\n)", options: .caseInsensitive)
-        let oldPins = try Manifest.current.getPins()
-        
-        let packageString = try Manifest.current.get()
-        let mutableString = NSMutableString(string: packageString)
-        
-        if regex.matches(in: packageString, options: [], range: NSMakeRange(0, packageString.utf8.count)).count == 0 {
-            throw fail(bar: removingProgressBar, with: "No packages matching the name passed in where found")
+        guard let pin = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first else {
+            throw EtherError(identifier: "pinNotFound", reason: "No package was found with the name '\(name)'")
         }
         
-        regex.replaceMatches(in: mutableString, options: [], range: NSMakeRange(0, mutableString.length), withTemplate: "")
-        try mutableString.removeDependency(name)
-        
-        do {
-            try String(mutableString).data(using: .utf8)?.write(to: URL(string: "file:\(manager.currentDirectoryPath)/Package.swift")!)
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-        } catch let error {
-            removingProgressBar.fail()
-            throw error
+        try Manifest.current.dependency(withURL: pin.repositoryURL)?.delete()
+        try Manifest.current.targets().filter { $0.dependencies.contains(pin.package) }.forEach { target in
+            if let index = target.dependencies.index(of: pin.package) {
+                target.dependencies.remove(at: index)
+                try target.save()
+            }
         }
         
-        let pins = try Manifest.current.getPins()
-        let pinsCount = oldPins.count - pins.count
+        _ = try Process.execute("swift", ["package", "update"])
+        _ = try Process.execute("swift", ["package", "resolve"])
         
-        removingProgressBar.finish()
+        let removed = try pinCount - Manifest.current.resolved().object.pins.count
+        removing.succeed()
         
-        if let _ = arguments.options["xcode"] {
-            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-            xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-            xcodeBar.finish()
-            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+        if context.options["xcode"] != nil {
+            let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+            _ = xcodeBar.start(on: context.container)
+            
+            _ = try Process.execute("swift", ["package", "generate-xcodeproj"])
+            xcodeBar.succeed()
+            _ = try Process.execute("bash", ["-c", "open *.xcodeproj"])
         }
         
-        console.output("📦  \(pinsCount) packages removed", style: .custom(.white), newLine: true)
+        context.console.print("📦  \(removed) packages removed")
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }

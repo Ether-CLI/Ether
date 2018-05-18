@@ -20,78 +20,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
 import Console
+import Vapor
 import Ether
-import Helpers
-import libc
 
-// The current version of Ether. This string should be updated with each release.
-let version = "1.10.0"
-var arguments = CommandLine.arguments
-let terminal = Terminal(arguments: arguments)
-var iterator = arguments.makeIterator()
+let version = "2018.05.18"
 
-guard let executable = iterator.next() else {
-    throw ConsoleError.noExecutable
-}
-
+let arguments = CommandLine.arguments
 if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
+    let terminal = Terminal()
     terminal.output("Ether Version: \(version)", style: .info, newLine: true)
     exit(0)
 }
 
-let date = Date()
-let formatter = DateFormatter()
-formatter.dateFormat = "YYYY"
-let currentYear = formatter.string(from: date)
+var services = Services.default()
+
+let versions = Commands(
+    commands: [
+        "all": VersionAll(),
+        "latest": VersionLatest(),
+        "set": VersionSet()
+    ],
+    defaultCommand: "all"
+).group(help: [
+    "For interacting with dependency versions"
+])
+
+var commands = CommandConfig()
+commands.use(Configuration(), as: "config")
+commands.use(FixInstall(), as: "fix-install")
+commands.use(Install(), as: "install")
+commands.use(New(), as: "new")
+commands.use(Remove(), as: "remove")
+commands.use(Search(), as: "search")
+commands.use(Template(), as: "template")
+commands.use(Update(), as: "update")
+commands.use(versions, as: "version")
+
+services.register(commands)
 
 do {
-    let commands: [Runnable] = [
-        Search(console: terminal),
-        Install(console: terminal),
-        Update(console: terminal),
-        Remove(console: terminal),
-        Template(console: terminal),
-        New(console: terminal),
-        FixInstall(console: terminal),
-        Group(id: "version", commands: [
-            VersionLatest(console: terminal),
-            VersionAll(console: terminal),
-            VersonSet(console: terminal)
-            ], help: ["For interacting with dependency versions"]),
-        CleanManifest(console: terminal)   
-    ]
-    
-    try terminal.run(executable: executable, commands: commands, arguments: Array(iterator), help: [
-        "MIT \(currentYear) Caleb Kleveter.",
-        "If you are getting errors, open an issue on GitHub.",
-        "If you want to help, submit a PR."
-    ])
-} catch ConsoleError.insufficientArguments {
-    terminal.error("Error: ", newLine: false)
-    terminal.print("Insufficient arguments.")
-} catch ConsoleError.help {
-    exit(0)
-} catch ConsoleError.cancelled {
-    print("Cancelled")
-    exit(2)
-} catch ConsoleError.noCommand {
-    terminal.error("Error: ", newLine: false)
-    terminal.print("No command supplied.")
-} catch let ConsoleError.commandNotFound(id) {
-    terminal.error("Error: ", newLine: false)
-    terminal.print("Command \"\(id)\" not found.")
-} catch let EtherError.fail(message) {
-    let err = "Error: "
-    var output = message.split(separator: "\n").map({ return String(repeating: " ", count: err.count) + $0 })
-    output[0] = output[0].trim()
-    
-    terminal.error("Error: ", newLine: false)
-    terminal.print(output.joined(separator: "\n"))
-    exit(1)
+    try Application.asyncBoot(services: services).wait().run()
 } catch {
-    terminal.error("Error: ", newLine: false)
-    terminal.print("\(error)")
+    print("Error:", error)
     exit(1)
 }
+

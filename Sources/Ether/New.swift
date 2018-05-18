@@ -20,82 +20,74 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
-import Helpers
 import Foundation
+import Manifest
+import Helpers
+import Command
 
 public final class New: Command {
-    public let id = "new"
-    
-    public let help: [String] = [
-        "Create new projects"
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name of the new project"])
     ]
     
-    public let signature: [Argument] = [
-        Value(name: "name", help: [
-            "The name of the new project"
-        ]),
-        Option(name: "executable", short: "e", help: [
-            "Creates an executable SPM project"
-        ]),
-        Option(name: "package", short: "p", help: [
-            "Creates an SPM package"
-        ]),
-        Option(name: "template", help: [
-            "Creates a project starting with a previously saved template"
-        ])
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "executable", short: "e", help: ["Creates an executable SPM project"]),
+        CommandOption.flag(name: "package", short: "p", help: ["(default) Creates an SPM package"]),
+        CommandOption.value(name: "template", help: ["Creates a project with a previously saved template"])
     ]
     
-    public let console: ConsoleProtocol
+    public var help: [String] = ["Creates a new project"]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
+    public init() {}
     
-    public func run(arguments: [String]) throws {
-        let newProjectBar = console.loadingBar(title: "Generating Project")
-        newProjectBar.start()
-        
-        let executable = try newExecutable(arguments: arguments)
-        let template = try newFromTemplate(arguments: arguments)
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let newProject = context.console.loadingBar(title: "Generating Project")
+        _ = newProject.start(on: context.container)
+
+        let executable = try newExecutable(from: context)
+        let template = try newFromTemplate(using: context)
         if !executable && !template {
-            try newPackage(arguments: arguments)
+            try newPackage(from: context)
         }
-        
-        newProjectBar.finish()
+
+        newProject.succeed()
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
-    func newExecutable(arguments: [String]) throws -> Bool {
-        if let _ = arguments.option("executable") {
-            let name = try value("name", from: arguments)
-            let script = "mkdir \(name); cd \(name); swift package init --type=executable; ether clean-manifest"
-            _ = try console.backgroundExecute(program: "bash", arguments: ["-c", script])
+    func newExecutable(from context: CommandContext) throws -> Bool {
+        if let _ = context.options["executable"] {
+            let name = try context.argument("name")
+            let script = "mkdir \(name); cd \(name); swift package init --type=executable"
+            _ = try Process.execute("bash", ["-c", script])
+            
+            try Manifest.current.reset()
             return true
         }
         return false
     }
     
-    func newFromTemplate(arguments: [String]) throws -> Bool {
-        if let template = arguments.option("template") {
-            let name = try value("name", from: arguments)
+    func newFromTemplate(using context: CommandContext) throws -> Bool {
+        if let template = context.options["template"] {
+            let name = try context.argument("name")
             let manager = FileManager.default
-            
+
             if #available(OSX 10.12, *) {
                 let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
                 let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".dropFirst(7))
                 let current = manager.currentDirectoryPath
-                shell(command: "/bin/cp", "-a", "\(templatePath)", "\(current)/\(name)")
+                _ = try Process.execute("cp", ["-a", "\(templatePath)", "\(current)/\(name)"])
             } else {
-                throw EtherError.fail("This command is not supported in macOS versions older then 10.12")
+                throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
             }
             return true
         }
         return false
     }
     
-    func newPackage(arguments: [String]) throws {
-        let name = try value("name", from: arguments)
-        let script = "mkdir \(name); cd \(name); swift package init; ether clean-manifest"
-        _ = try console.backgroundExecute(program: "bash", arguments: ["-c", script])
+    func newPackage(from context: CommandContext) throws {
+        let name = try context.argument("name")
+        let script = "mkdir \(name); cd \(name); swift package init"
+        _ = try Process.execute("bash", ["-c", script])
+        try Manifest.current.reset()
     }
 }

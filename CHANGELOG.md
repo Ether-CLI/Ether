@@ -1,3 +1,8 @@
+## [2018.05.18]
+ 
+### Updated
+- Rewrote whole CLI with Console 3, Manifest, and the vapor-community/PackageCatalogAPI. 
+
 ## [1.10.0] 2018-02-18
 
 ### Added

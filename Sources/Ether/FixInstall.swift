@@ -20,41 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
+import Command
 
-public class FixInstall: Command {
-    public let id: String = "fix-install"
+public final class FixInstall: Command {
+    public var arguments: [CommandArgument] = []
+    public var options: [CommandOption] = []
     
-    public let signature: [Argument] = [
-        Option(name: "no-build", help: [
-            "Skips the rebuilding proccess after clearing the project cache"
-        ])
-    ]
+    public var help: [String] = ["Fixes fetching errors that occur during package install"]
     
-    public var help: [String] = [
-        "Fixes fetching errors that occur during package install"
-    ]
+    public init() {}
     
-    public let console: ConsoleProtocol
-    
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
-    
-    public func run(arguments: [String]) throws {
-        let fixBar = console.loadingBar(title: "Fixing Installation")
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        context.console.output("This may take some time...", style: .info)
         
-        console.output("This may take some time...", style: .info, newLine: true)
-        fixBar.start()
+        let fixing = context.console.loadingBar(title: "Fixing Instillation")
+        _ = fixing.start(on: context.container)
         
-        _ = try console.backgroundExecute(program: "rm", arguments: ["-rf", ".build"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
+        _ = try Process.execute("rm", ["--rf", ".build"])
+        _ = try Process.execute("swift", ["package", "update"])
+        _ = try Process.execute("swift", ["package", "resolve"])
         
-        if arguments.option("no-build") == nil {
-            _ = try console.backgroundExecute(program: "swift", arguments: ["build"])
-        }
+        fixing.succeed()
         
-        fixBar.finish()
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }

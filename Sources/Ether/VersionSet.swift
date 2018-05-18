@@ -20,98 +20,86 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
+import Manifest
+import Command
 import Helpers
-import Foundation
 
-public final class VersonSet: Command {
-    public let id: String = "set"
-    
-    public var signature: [Argument] = [
-        Value(name: "name", help: [
-                "The name of the package to change the version for"
-            ]),
-        Value(name: "version", help: [
-                "The value for the new version. The format varies depending on the version type used"
-            ]),
-        Option(name: "xcode", short: "x", help: [
-                "Regenerate the Xcode project after updating a package's version"
-            ]),
-        Option(name: "from", short: "f", help: [
-                "Sets the dependency version argument to `from: VERSION`"
-            ]),
-        Option(name: "up-to-next-major", short: "u", help: [
-                "Sets the dependency version argument to `.upToNextMinor(from: \"VERSION\")`"
-            ]),
-        Option(name: "exact", short: "e", help: [
-                "(Default) Sets the dependency version argument to `.exact(\"VERSION\")`"
-            ]),
-        Option(name: "range", short: "r", help: [
-                "Sets the dependency version argument to `VERSION`"
-            ]),
-        Option(name: "branch", short: "b", help: [
-                "Sets the dependency version argument to `.branch(\"VERSION\")`"
-            ]),
-        Option(name: "revision", help: [
-                "Sets the dependency version argument to `.revision(\"VERSION\")`"
-            ])
+public final class VersionSet: Command {
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name of the package to change the version for"]),
+        CommandArgument.argument(name: "version", help: ["The version to set the specified package to. The format varies depending on the version type used"])
     ]
     
-    public var help: [String] = [
-        "Changes the version of a single dependency"
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "from", short: "f", help: ["(default) Sets the dependency version argument to `from: VERSION`"]),
+        CommandOption.flag(name: "up-to-next-major", short: "u", help: ["Sets the dependency version argument to `.upToNextMinor(from: \"VERSION\")`"]),
+        CommandOption.flag(name: "exact", short: "e", help: ["Sets the dependency version argument to `.exact(\"VERSION\")`"]),
+        CommandOption.flag(name: "range", short: "r", help: ["Sets the dependency version argument to `VERSION`"]),
+        CommandOption.flag(name: "branch", short: "b", help: ["Sets the dependency version argument to `.branch(\"VERSION\")`"]),
+        CommandOption.flag(name: "revision", help: ["Sets the dependency version argument to `.revision(\"VERSION\")`"]),
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate the Xcode project after updating a package's version"])
     ]
     
-    public let console: ConsoleProtocol
+    public var help: [String] = ["Changes the version of a single dependency"]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
+    public init() {}
     
-    public func run(arguments: [String]) throws {
-        let updateBar = console.loadingBar(title: "Updating Package Version")
-        updateBar.start()
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let updating = context.console.loadingBar(title: "Updating Package Version")
+        _ = updating.start(on: context.container)
         
-        let package = try value("name", from: arguments)
-        let version = try value("version", from: arguments)
-        let versionLitteral = versionOption(from: arguments, with: version)
+        let package = try context.argument("name")
+        let version = try context.argument("version")
+        let versionLitteral = try self.version(from: context.options, with: version)
         
-        let url = try Manifest.current.getPackageUrl(for: package)
-        let manifest = try NSMutableString(string: Manifest.current.get())
-        let pattern = try NSRegularExpression(
-            pattern: "(\\,?\\n *\\.package\\(url: *\"\(url)\", *)(.*?)(\\),?\\n)",
-            options: []
-        )
-        pattern.replaceMatches(in: manifest, options: [], range: NSMakeRange(0, manifest.length), withTemplate: "$1\(versionLitteral)$3")
-        try Manifest.current.write(String(manifest))
+        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == package }).first?.repositoryURL else {
+            throw EtherError(identifier: "pinNotFound", reason: "No pin entry found for package name '\(package)'")
+        }
+        guard let dependency = try Manifest.current.dependency(withURL: url) else {
+            throw EtherError(identifier: "packageNotFound", reason: "No package found with URL '\(url)'")
+        }
+        dependency.version = versionLitteral
+        try dependency.save()
         
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-        
-        updateBar.finish()
-        
-        if let _ = arguments.options["xcode"] {
-            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-            xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-            xcodeBar.finish()
-            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+        _ = try Process.execute("swift", "package", "update")
+        updating.succeed()
+
+        if let _ = context.options["xcode"] {
+            let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+            _ = xcodeBar.start(on: context.container)
+            _ = try Process.execute("swift", "package", "generate-xcodeproj")
+            xcodeBar.succeed()
+            _ = try Process.execute("/bin/sh", "-c", "open *.xcodeproj")
         }
         
-        console.output("\(package) version was updated", style: .plain, newLine: true)
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
-    private func versionOption(from arguments: [String], with version: String) -> String {
-        if arguments.option("from") != nil {
-            return "from: \"\(version)\""
-        } else if arguments.option("up-to-next-major") != nil {
-            return ".upToNextMajor(from: \"\(version)\")"
-        } else if arguments.option("range") != nil {
-            return "\"\(version.dropLast(8))\"\(String(version.dropFirst(5)).dropLast(5))\"\(version.dropFirst(8))\""
-        } else if arguments.option("branch") != nil {
-            return ".branch(\"\(version)\")"
-        } else if arguments.option("revision") != nil {
-            return ".revision(\"\(version)\")"
+    private func version(from options: [String: String], with version: String)throws -> DependencyVersionType {
+        if options["exact"] != nil {
+            return .exact(version)
+            
+        } else if options["up-to-next-major"] != nil {
+            return .upToNextMajor(version)
+            
+        } else if options["branch"] != nil {
+            return .branch(version)
+            
+        } else if options["revision"] != nil {
+            return .revision(version)
+            
+        } else if options["range"] != nil {
+            let pattern = try NSRegularExpression(pattern: "(.*?)(\\.\\.(?:\\.|<))(.*)", options: [])
+            guard let match = pattern.firstMatch(in: version, options: [], range: version.range) else {
+                throw EtherError(identifier: "badVersionStructure", reason: "The '--range' flag was passed in, but the version is not structured as a range")
+            }
+            let open = version.substring(at: match.range(at: 1))!
+            let `operator` = version.substring(at: match.range(at: 2))!
+            let close = version.substring(at: match.range(at: 3))!
+            
+            return .range("\"\(open)\"\(`operator`)\"\(close)\"")
         }
-        return ".exact(\"\(version)\")"
+        
+        return .from(version)
     }
 }

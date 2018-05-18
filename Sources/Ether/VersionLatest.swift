@@ -20,69 +20,77 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// REGEX: \\.Package\\(url\\:\\s?\\\"https\\:\\/\\/github\\.com([\\d\\w\\:\\/\\.\\@\\-]+)\\.git\\\"\\,([\\d\\w\\s\\:])+\\)\\,?
-
-import Console
-import Helpers
 import Foundation
-import Core
+import Manifest
+import Helpers
+import Command
+import Vapor
 
 public final class VersionLatest: Command {
-    public let id = "latest"
-    public let baseURL = "https://packagecatalog.com/data/package"
+    public var arguments: [CommandArgument] = []
     
-    public var help: [String] = [
-        "Updates all packeges to the latest version"
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate Xcode project after updating package versions"])
     ]
     
-    public var signature: [Argument] = [
-        Option(name: "xcode", short: "x", help: [
-            "Regenerate Xcode project after updating package versions"
-        ])
-    ]
+    public var help: [String] = ["Updates all packeges to the latest version"]
     
-    public let console: ConsoleProtocol
-    public let client = PackageJSONFetcher()
+    public init() {}
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
-    
-    public func run(arguments: [String]) throws {
-        let updateBar = console.loadingBar(title: "Updating Package Versions")
-        updateBar.start()
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let updating = context.console.loadingBar(title: "Updating Version Versions")
+        _ = updating.start(on: context.container)
         
-        let fileManager = FileManager.default
-        let manifest = try Manifest.current.get()
-        let nsManifest = NSMutableString(string: manifest)
-        let versionPattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/(.*?)\\.git\",\\s*)(.*?)(\\),?\\n)", options: [])
-        let matches = versionPattern.matches(in: manifest, options: [], range: NSMakeRange(0, manifest.utf8.count))
-        let packageNames = matches.map { match -> String in
-            let name = versionPattern.replacementString(for: match, in: manifest, offset: 0, template: "$2")
-            return name
-        }
-        let packageVersions = try packageNames.map { name -> String in
-            return try Manifest.current.getPackageData(for: name).version
+        let namePattern = try NSRegularExpression(pattern: ".*?\\.com\\/(.*?)\\.git", options: [])
+        let tagPattern = try NSRegularExpression(pattern: "v?\\d+(?:\\.\\d+)?(?:\\.\\d+)?", options: [])
+        let client = try context.container.make(Client.self)
+        
+        guard let token = try Configuration.get().accessToken else {
+            throw EtherError(
+                identifier: "noAccessToken",
+                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
+            )
         }
         
-        try zip(packageVersions, packageNames).forEach { (arg) in
-            let (version, name) = arg
-            let pattern = try NSRegularExpression(pattern: "(.package\\(url:\\s*\".*?\\.com\\/\(name)\\.git\",\\s*)(\\.?\\w+(\\(|:)\\s*\"[\\w\\.]+\"\\)?)(\\))", options: [])
-            pattern.replaceMatches(in: nsManifest, options: [], range: NSMakeRange(0, nsManifest.length), withTemplate: "$1.exact(\"\(version)\"))")
+        let packageNames = try Manifest.current.dependencies().compactMap { dependency -> (fullName: String, url: String)? in
+            guard let result = namePattern.firstMatch(in: dependency.url, options: [], range: NSMakeRange(0, dependency.url.utf8.count)) else { return nil }
+            return (namePattern.replacementString(for: result, in: dependency.url, offset: 0, template: "$1"), dependency.url)
         }
+        let versions = packageNames.map { $0.fullName }.map { name in
+            return client.get("https://package.vapor.cloud/packages/\(name)/releases", headers: ["Authorization": "Bearer \(token)"]).flatMap { response in
+                return try response.content.decode([String].self)
+            }.map { releases -> String? in
+                for tag in releases {
+                    let tagRange = NSMakeRange(0, tag.utf8.count)
+                    if tagRange == tagPattern.rangeOfFirstMatch(in: tag, options: [], range: tagRange) {
+                        return tag
+                    }
+                }
+                return nil
+            }
+        }.flatten(on: context.container)
         
-        try String(nsManifest).data(using: .utf8)?.write(to: URL(string: "file:\(fileManager.currentDirectoryPath)/Package.swift")!)
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "update"])
-        _ = try console.backgroundExecute(program: "swift", arguments: ["package", "resolve"])
-        
-        updateBar.finish()
-        
-        if let _ = arguments.options["xcode"] {
-            let xcodeBar = console.loadingBar(title: "Generating Xcode Project")
-            xcodeBar.start()
-            _ = try console.backgroundExecute(program: "swift", arguments: ["package", "generate-xcodeproj"])
-            xcodeBar.finish()
-            try console.execute(program: "/bin/sh", arguments: ["-c", "open *.xcodeproj"], input: nil, output: nil, error: nil)
+        return versions.map(to: Void.self) { versions in
+            try zip(packageNames, versions).forEach { packageVersion in
+                let (names, version) = packageVersion
+                let dependency = try Manifest.current.dependency(withURL: names.url)
+                if let version = version {
+                    dependency?.version = .from(version)
+                }
+                try dependency?.save()
+            }
+            
+            _ = try Process.execute("swift", "package", "update")
+            updating.succeed()
+            
+            if let _ = context.options["xcode"] {
+                let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
+                _ = xcodeBar.start(on: context.container)
+                
+                _ = try Process.execute("swift", "package", "generate-xcodeproj")
+                xcodeBar.succeed()
+                _ = try Process.execute("sh", "-c", "open *.xcodeproj")
+            }
         }
     }
 }

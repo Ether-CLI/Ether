@@ -20,13 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
+import Debugging
 
-public enum EtherError: Error {
-    case fail(String)
-}
-
-public func fail(bar: LoadingBar, with message: String) -> Error {
-    bar.fail()
-    return EtherError.fail(message)
+public struct EtherError: Error, Debuggable {
+    public let identifier: String
+    public let reason: String
+    
+    public init(identifier: String, reason: String) {
+        self.identifier = identifier
+        self.reason = reason
+    }
 }

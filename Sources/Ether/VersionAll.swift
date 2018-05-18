@@ -20,36 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
-import Foundation
-import Helpers
+import Manifest
+import Command
 
 public final class VersionAll: Command {
-    public let id = "all"
+    public var arguments: [CommandArgument] = []
     
-    public var help: [String] = [
-        "Outputs the name of each package installed and its version"
-    ]
+    public var options: [CommandOption] = []
     
-    public var signature: [Argument] = []
+    public var help: [String] = ["Outputs the name of each package installed and its version"]
     
-    public let console: ConsoleProtocol
+    public init() {}
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
-    
-    public func run(arguments: [String]) throws {
-        let fetchingDataBar = console.loadingBar(title: "Getting Package Data")
-        fetchingDataBar.start()
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let pins = try Manifest.current.resolved().object.pins
         
-        let pins = try Manifest.current.getPins()
-        fetchingDataBar.finish()
         pins.forEach { package in
-            console.output("\(package["package"] ?? "N/A" as AnyObject): ", style: .success, newLine: false)
-            if let state = package["state"] as? [String: AnyObject] {
-                console.output("v\(state["version"] ?? "N/A" as AnyObject)", style: .plain, newLine: true)
+            context.console.output(package.package + ": ", style: .success, newLine: false)
+            let version: String
+            
+            if let number = package.state.version {
+                version = "v\(number)"
+            } else if let branch = package.state.branch {
+                version = branch
+            } else {
+                version = package.state.revision
             }
+            
+            context.console.print(version)
         }
+        
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }

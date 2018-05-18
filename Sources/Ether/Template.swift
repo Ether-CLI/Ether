@@ -20,70 +20,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-// Path: ~/Library/Application\ Support/Ether
-
-import Console
 import Foundation
-import Core
 import Helpers
+import Command
 
-final public class Template: Command {
-    public let id = "template"
-    
-    public let signature: [Argument] = [
-        Value(name: "template-name", help: [
-            "The name used to identify the template"
-        ]),
-        Option(name: "github", help: [
-            "Creates a GitHub repo and pushes the template to it (Un-implimented)"
-        ]),
-        Option(name: "remove", short: "r", help: [
-            "Deletes the template"
-        ])
+public final class Template: Command {
+    public var arguments: [CommandArgument] = [
+        CommandArgument.argument(name: "name", help: ["The name used to identify the template"])
     ]
     
-    public let help: [String] = [
-        "Creates and stores a template for use as the starting point of a project."
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "remove", short: "r", help: ["Deletes the template"])
+        // TODO: Add `github` flag to create remote repo and push.
     ]
     
-    public let console: ConsoleProtocol
+    public var help: [String] = ["Creates and stores a template for use as the starting point of a project."]
     
-    public init(console: ConsoleProtocol) {
-        self.console = console
-    }
+    public init() {}
     
-    public func run(arguments: [String]) throws {
-        let name = try value("template-name", from: arguments)
-        let useGitHub = arguments.option("github") != nil ? true : false
-        let removeTemplate = arguments.option("remove") != nil ? true : false
+    public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        let name = try context.argument("name")
+        let removeTemplate = context.options["remove"] == nil ? false : true
         let manager = FileManager.default
-        let loadingBarTitle = removeTemplate ? "Deleting Template" : "Saving Template"
+        let barTitle = removeTemplate ? "Deleting Template" : "Saving Template"
         
-        let savingBar = console.loadingBar(title: loadingBarTitle)
-        savingBar.start()
+        let temapletBar = context.console.loadingBar(title: barTitle)
+        _ = temapletBar.start(on: context.container)
         
         if #available(OSX 10.12, *) {
             var isDir : ObjCBool = true
             let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
             let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".dropFirst(7))
             let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
-            
+
             if removeTemplate {
-                if !directoryExists { throw fail(bar: savingBar, with: "No template with that name exists") }
-                shell(command: "/bin/rm", "-rf", "\(defaultPath)/\(name)")
+                if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
+                _ = try Process.execute("rm", ["-rf", "\(defaultPath)/\(name)"])
             } else {
-                if directoryExists { throw fail(bar: savingBar, with: "A template with that name already exists") }
+                if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
                 let current = manager.currentDirectoryPath + "/."
-                shell(command: "/bin/cp", "-a", "\(current)", "\(defaultPath)/\(name)")
+                _ = try Process.execute("cp", ["-a", "\(current)", "\(defaultPath)/\(name)"])
             }
         } else {
-            throw fail(bar: savingBar, with: "This command is not supported in macOS versions older then 10.12")
-        }
-        savingBar.finish()
-        
-        if useGitHub {
-            console.output("The GitHub flag is currently not implimented", style: .warning, newLine: true)
+            throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
         }
         
+        temapletBar.succeed()
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }
