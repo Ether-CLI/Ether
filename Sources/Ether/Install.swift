@@ -180,13 +180,14 @@ public final class Install: Command {
             if first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha") {
                 let majorVersion = Int(String(first.first ?? "0")) ?? 0
                 if majorVersion > 0 && releases.count > 1 {
-                    var answer: String
+                    var answer: String = "replace"
                     
-                    repeat {
+                    while true {
                         answer = context.console.ask(
                             ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/n)")
-                            ).lowercased()
-                    } while answer != "y" || answer != "n"
+                        ).lowercased()
+                        if answer == "y" || answer == "n" { break }
+                    }
                     
                     if answer == "y" {
                         return releases.filter { Int(String($0.first ?? "0")) ?? 0 != majorVersion }.first ?? first
