@@ -48,7 +48,7 @@ public final class VersionSet: Command {
         
         let package = try context.argument("name")
         let version = try context.argument("version")
-        let versionLitteral = self.versionOption(from: context.options, with: version)
+        let versionLitteral = try self.version(from: context.options, with: version)
         
         guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == package }).first?.repositoryURL else {
             throw EtherError(identifier: "pinNotFound", reason: "No pin entry found for package name '\(package)'")
@@ -59,7 +59,7 @@ public final class VersionSet: Command {
         dependency.version = versionLitteral
         try dependency.save()
         
-        _ = Process.execute("swift", "package", "update")
+        _ = try Process.execute("swift", "package", "update")
         updating.succeed()
 
         if let _ = context.options["xcode"] {
