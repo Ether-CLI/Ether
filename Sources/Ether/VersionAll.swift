@@ -33,12 +33,10 @@ public final class VersionAll: Command {
     public init() {}
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
-        context.console.output("Getting Package Data...", style: .success)
-        
         let pins = try Manifest.current.resolved().object.pins
         
         pins.forEach { package in
-            context.console.output(package.package, style: .success, newLine: false)
+            context.console.output(package.package + ": ", style: .success, newLine: false)
             let version: String
             
             if let number = package.state.version {
