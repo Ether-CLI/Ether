@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/Ether-CLI/Manifest.git",
         "state": {
           "branch": null,
-          "revision": "a1884894e75cde17bec40415df0b50292c4a5128",
-          "version": "0.4.4"
+          "revision": "a200f9a6af998f787ac4ea7b92802f7b139d499f",
+          "version": "0.4.5"
         }
       },
       {
