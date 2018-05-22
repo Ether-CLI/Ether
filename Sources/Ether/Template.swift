@@ -47,22 +47,23 @@ public final class Template: Command {
         let temapletBar = context.console.loadingBar(title: barTitle)
         _ = temapletBar.start(on: context.container)
         
-        if #available(OSX 10.12, *) {
-            var isDir : ObjCBool = true
-            let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
-            let defaultPath = String("\(directoryName)Library/Application Support/Ether/Templates".dropFirst(7))
-            let directoryExists = manager.fileExists(atPath: "\(defaultPath)/\(name)", isDirectory: &isDir)
+        let user = try Process.execute("whoami")
+        try FileManager.default.createDirectory(
+            at: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/Templates")!,
+            withIntermediateDirectories: true,
+            attributes: [:]
+        )
+        
+        var isDir : ObjCBool = true
+        let directoryExists = manager.fileExists(atPath: "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)", isDirectory: &isDir)
 
-            if removeTemplate {
-                if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
-                _ = try Process.execute("rm", ["-rf", "\(defaultPath)/\(name)"])
-            } else {
-                if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
-                let current = manager.currentDirectoryPath + "/."
-                _ = try Process.execute("cp", ["-a", "\(current)", "\(defaultPath)/\(name)"])
-            }
+        if removeTemplate {
+            if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
+            _ = try Process.execute("rm", ["-rf", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
         } else {
-            throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
+            if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
+            let current = manager.currentDirectoryPath + "/."
+            _ = try Process.execute("cp", ["-a", "\(current)", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
         }
         
         temapletBar.succeed()
