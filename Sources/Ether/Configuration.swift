@@ -96,4 +96,20 @@ public struct Config: Codable, Reflectable {
     static let properties: [String: WritableKeyPath<Config, String?>] = [
         "access-token": \.accessToken
     ]
+    
+    func token()throws -> String {
+        guard let token = self.accessToken else {
+            var error = EtherError(
+                identifier: "noAccessToken",
+                reason: "No access token in configuration"
+            )
+            error.suggestedFixes = [
+                "Create a GitHub token at https://github.com/settings/tokens",
+                "Run `ether config access-token <TOKEN>`",
+                "The token should have permissions to access public repositorie"
+            ]
+            throw error
+        }
+        return token
+    }
 }

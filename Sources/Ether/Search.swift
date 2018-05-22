@@ -48,17 +48,11 @@ public final class Search: Command {
         let client = try context.container.make(Client.self)
         let name = try context.argument("name")
         let maxResults = context.options["max-results"] ?? "20"
-        let config = try Configuration.get()
         
         guard let max = Int(maxResults), max <= 100 && max > 0 else {
             throw EtherError(identifier: "badMaxResults", reason: "`max-results` value must be an integer, less than or equal to 100, and greater than 0")
         }
-        guard let token = config.accessToken else {
-            throw EtherError(
-                identifier: "noAccessToken",
-                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
-            )
-        }
+        let token = try Configuration.get().token()
         
         let response = client.get("https://package.vapor.cloud/packages/search?name=\(name)&limit=\(max)", headers: ["Authorization": "Bearer \(token)"])
         return response.flatMap(to: [PackageDescription].self) { response in

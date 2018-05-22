@@ -25,6 +25,7 @@ import Debugging
 public struct EtherError: Error, Debuggable {
     public let identifier: String
     public let reason: String
+    public var suggestedFixes: [String] = []
     
     public init(identifier: String, reason: String) {
         self.identifier = identifier
