@@ -188,4 +188,4 @@ If they are on GitHub, they already are! Ether uses GitHub's GraphQL API to fetc
 
 ## What license is it under?
 
-Ether is under the MIT license.
+Ether is under the [MIT license](https://github.com/Ether-CLI/Ether/blob/master/LICENSE.md).
