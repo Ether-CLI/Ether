@@ -65,6 +65,20 @@ public class Configuration: Command {
         let user = try Process.execute("whoami")
         let configuration: Data
         
+        try FileManager.default.createDirectory(
+            at: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether")!,
+            withIntermediateDirectories: true,
+            attributes: [:]
+        )
+        
+        if !FileManager.default.fileExists(atPath: "/Users/\(user)/Library/Application Support/Ether/config.json") {
+            FileManager.default.createFile(
+                atPath: "/Users/\(user)/Library/Application Support/Ether/config.json",
+                contents: nil,
+                attributes: [:]
+            )
+        }
+        
         let contents = try Data(contentsOf: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
         if contents.count > 0 {
             configuration = contents
@@ -82,4 +96,20 @@ public struct Config: Codable, Reflectable {
     static let properties: [String: WritableKeyPath<Config, String?>] = [
         "access-token": \.accessToken
     ]
+    
+    func token()throws -> String {
+        guard let token = self.accessToken else {
+            var error = EtherError(
+                identifier: "noAccessToken",
+                reason: "No access token in configuration"
+            )
+            error.suggestedFixes = [
+                "Create a GitHub token at https://github.com/settings/tokens",
+                "Run `ether config access-token <TOKEN>`",
+                "The token should have permissions to access public repositorie"
+            ]
+            throw error
+        }
+        return token
+    }
 }

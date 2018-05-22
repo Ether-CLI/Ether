@@ -1,3 +1,8 @@
+## [2018.05.22]
+ 
+### Fixed
+- Create config file and template directory if they don't exist instead of throwing an error.
+
 ## [2018.05.18]
  
 ### Updated

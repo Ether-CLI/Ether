@@ -126,12 +126,7 @@ public final class Install: Command {
     
     func package(with name: String, on context: CommandContext)throws -> Future<(url: String, version: String, products: [String])> {
         let client = try context.container.make(Client.self)
-        guard let token = try Configuration.get().accessToken else {
-            throw EtherError(
-                identifier: "noAccessToken",
-                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
-            )
-        }
+        let token = try Configuration.get().token()
         
         let fullName: Future<String>
         if name.contains("/") {

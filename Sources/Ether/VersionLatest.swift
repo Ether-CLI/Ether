@@ -45,12 +45,7 @@ public final class VersionLatest: Command {
         let tagPattern = try NSRegularExpression(pattern: "v?\\d+(?:\\.\\d+)?(?:\\.\\d+)?", options: [])
         let client = try context.container.make(Client.self)
         
-        guard let token = try Configuration.get().accessToken else {
-            throw EtherError(
-                identifier: "noAccessToken",
-                reason: "No access token in configuration. Run `ether config access-token <TOKEN>`. The token should have permissions to access public repositories"
-            )
-        }
+        let token = try Configuration.get().token()
         
         let packageNames = try Manifest.current.dependencies().compactMap { dependency -> (fullName: String, url: String)? in
             guard let result = namePattern.firstMatch(in: dependency.url, options: [], range: NSMakeRange(0, dependency.url.utf8.count)) else { return nil }
