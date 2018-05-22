@@ -65,6 +65,20 @@ public class Configuration: Command {
         let user = try Process.execute("whoami")
         let configuration: Data
         
+        try FileManager.default.createDirectory(
+            at: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether")!,
+            withIntermediateDirectories: true,
+            attributes: [:]
+        )
+        
+        if !FileManager.default.fileExists(atPath: "/Users/\(user)/Library/Application Support/Ether/config.json") {
+            FileManager.default.createFile(
+                atPath: "/Users/\(user)/Library/Application Support/Ether/config.json",
+                contents: nil,
+                attributes: [:]
+            )
+        }
+        
         let contents = try Data(contentsOf: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
         if contents.count > 0 {
             configuration = contents
