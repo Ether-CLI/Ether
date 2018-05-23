@@ -92,7 +92,7 @@ Note that this is case insensitive.
 
 ### Fix Install
 
-Fixes the install process when an error occurs during `install`
+Fixes the install process when an error occurs during `install`, such as a git conflict.
 
     ether fix-install
 
