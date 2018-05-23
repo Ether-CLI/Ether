@@ -20,38 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Console
-import Vapor
-import Ether
+import Command
 
-let version = "2018.05.22"
-
-let arguments = CommandLine.arguments
-if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
-    let terminal = Terminal()
-    terminal.output("Ether Version: \(version)", style: .info, newLine: true)
-    exit(0)
-}
-
-var services = Services.default()
-
-var commands = CommandConfig()
-commands.use(Configuration(), as: "config")
-commands.use(FixInstall(), as: "fix-install")
-commands.use(Install(), as: "install")
-commands.use(New(), as: "new")
-commands.use(Remove(), as: "remove")
-commands.use(Search(), as: "search")
-commands.use(Template(), as: "template")
-commands.use(Update(), as: "update")
-commands.use(versions, as: "version")
-
-services.register(commands)
-
-do {
-    try Application.asyncBoot(services: services).wait().run()
-} catch {
-    print("Error:", error)
-    exit(1)
-}
-
+public let versions = Commands(
+    commands: [
+        "all": VersionAll(),
+        "latest": VersionLatest(),
+        "set": VersionSet()
+    ],
+    defaultCommand: "all"
+).group(help: [
+    "For interacting with dependency versions"
+])
