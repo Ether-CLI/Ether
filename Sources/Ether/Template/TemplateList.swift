@@ -22,13 +22,27 @@
 
 import Command
 
-public let template = Commands(
-    commands: [
-        "create": TemplateCreate(),
-        "remove": TemplateRemove(),
-        "list": TemplateList()
-    ],
-    defaultCommand: "list"
-).group(help: [
-    "For saving and deleting template projects"
-])
+final class TemplateList: Command {
+    var arguments: [CommandArgument] = []
+    var options: [CommandOption] = []
+    
+    var help: [String] = ["Lists all saved project templates"]
+    
+    func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        
+        let user = try Process.execute("whoami")
+        try FileManager.default.createDirectory(
+            at: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/Templates")!,
+            withIntermediateDirectories: true,
+            attributes: [:]
+        )
+        
+        let projects = try Process.execute("ls", "/Users/\(user)/Library/Application Support/Ether/Templates/")
+        for project in projects.split(separator: "\n").map(String.init) {
+            context.console.info("- ", newLine: false)
+            context.console.print(project)
+        }
+        
+        return context.container.eventLoop.newSucceededFuture(result: ())
+    }
+}
