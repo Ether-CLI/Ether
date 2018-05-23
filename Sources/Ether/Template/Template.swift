@@ -19,3 +19,15 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+
+import Command
+
+public let template = Commands(
+    commands: [
+        "create": TemplateCreate(),
+        "remove": TemplateRemove()
+    ],
+    defaultCommand: "list"
+).group(help: [
+    "For saving and deleting template projects"
+])
