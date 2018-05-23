@@ -29,7 +29,11 @@ import Bits
 
 public class Configuration: Command {
     public var arguments: [CommandArgument] = [
-        CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
+        CommandArgument.argument(name: "key", help: [
+            "The configuration JSON key to set",
+            "Valid keys are:",
+            "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token"
+        ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in"])
     ]
     
