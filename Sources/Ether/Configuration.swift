@@ -34,7 +34,7 @@ public class Configuration: Command {
             "Valid keys are:",
             "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token"
         ]),
-        CommandArgument.argument(name: "value", help: ["The new value for the key passed in"])
+        CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
     ]
     
     public var options: [CommandOption] = []
@@ -48,7 +48,7 @@ public class Configuration: Command {
         _ = setter.start(on: context.container)
         
         let key = try context.argument("key")
-        let value = try context.argument("value")
+        let value = context.arguments["value"]
         let user = try Process.execute("whoami")
         
         var configuration = try Configuration.get()
