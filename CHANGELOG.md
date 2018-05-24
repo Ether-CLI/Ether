@@ -1,3 +1,10 @@
+## [2018.xx.xx]
+
+### Added
+- `install-commit` configuration key.
+- Template command group.
+- `template list` command.
+
 ## [2018.05.22]
  
 ### Fixed
