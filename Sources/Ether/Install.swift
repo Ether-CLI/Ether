@@ -182,9 +182,9 @@ public final class Install: Command {
                     
                     while true {
                         answer = context.console.ask(
-                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/n)")
+                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)")
                         ).lowercased()
-                        if answer == "y" || answer == "n" { break }
+                        if answer == "y" || answer == "n" || answer == "" { break }
                     }
                     
                     if answer == "y" {
