@@ -84,7 +84,7 @@ dependencies: [
 
 **Note:**
 
-The install command has a rather interesting method of getting the proper package. Because you can have packages with the same name by different authors, Ether will run a search based on the argument you pass in and get the most stared result. If the name contains a slash (`/`), then the URL will created directly without a search like this:
+The install command has a rather interesting method of getting the proper package. Because you can have packages with the same name by different authors, Ether will run a search based on the argument you pass in and get the most stared result. If the name contains a slash (`/`), then the URL will be created directly without a search like this:
 
     https://github.com/<NAME>.git
 
