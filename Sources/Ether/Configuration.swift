@@ -139,11 +139,11 @@ public struct Config: Codable, Reflectable {
                 commit = commit.replacingOccurrences(of: "&\(index)", with: value)
             }
             
-            var commitOptions = ["commit", "-m"]
-            if self.signed() { commitOptions.append("-S") }
+            var commitOptions = ["commit", "-m", commit.description]
+            if self.signed() { commitOptions.insert("-S", at: 1) }
             
             _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
-            let commitMessage = try Process.execute("git", commitOptions + [commit])
+            let commitMessage = try Process.execute("git", commitOptions)
             context.console.print(commitMessage)
         }
     }
