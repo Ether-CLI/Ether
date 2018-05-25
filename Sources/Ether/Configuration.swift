@@ -29,8 +29,15 @@ import Bits
 
 public class Configuration: Command {
     public var arguments: [CommandArgument] = [
-        CommandArgument.argument(name: "key", help: ["The configuration JSON key to set"]),
-        CommandArgument.argument(name: "value", help: ["The new value for the key passed in"])
+        CommandArgument.argument(name: "key", help: [
+            "The configuration JSON key to set",
+            "Valid keys are:",
+            "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token",
+            "- install-commit: The commit message to use on package install. Use &0 as package name placeholder",
+            "- remove-commit: The commit message to use on when a package is removed. Use &0 as package name placeholder",
+            "- signed-commits: If set to a truthy value (true, yes, y, 1), auto-commits will pass in the '-S' flag"
+        ]),
+        CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
     ]
     
     public var options: [CommandOption] = []
@@ -44,7 +51,7 @@ public class Configuration: Command {
         _ = setter.start(on: context.container)
         
         let key = try context.argument("key")
-        let value = try context.argument("value")
+        let value = context.arguments["value"]
         let user = try Process.execute("whoami")
         
         var configuration = try Configuration.get()
@@ -92,9 +99,15 @@ public class Configuration: Command {
 
 public struct Config: Codable, Reflectable {
     public var accessToken: String?
+    public var installCommit: String?
+    public var removeCommit: String?
+    public var signedCommits: String?
     
     static let properties: [String: WritableKeyPath<Config, String?>] = [
-        "access-token": \.accessToken
+        "access-token": \.accessToken,
+        "install-commit": \.installCommit,
+        "remove-commit": \.removeCommit,
+        "signed-commits": \.signedCommits
     ]
     
     func token()throws -> String {
@@ -111,5 +124,27 @@ public struct Config: Codable, Reflectable {
             throw error
         }
         return token
+    }
+    
+    func signed() -> Bool {
+        switch (self.signedCommits ?? "n").lowercased() {
+        case "true", "yes", "y", "1": return true
+        default: return false
+        }
+    }
+    
+    func commit(with message: String?, on context: CommandContext, replacements: [String] = [])throws {
+        if var commit = message {
+            for (index, value) in replacements.enumerated() {
+                commit = commit.replacingOccurrences(of: "&\(index)", with: value)
+            }
+            
+            var commitOptions = ["commit", "-m", commit.description]
+            if self.signed() { commitOptions.insert("-S", at: 1) }
+            
+            _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
+            let commitMessage = try Process.execute("git", commitOptions)
+            context.console.print(commitMessage)
+        }
     }
 }

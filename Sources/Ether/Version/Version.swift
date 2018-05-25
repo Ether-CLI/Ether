@@ -20,16 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
-import Debugging
+import Command
 
-public struct EtherError: Error, Debuggable {
-    public let identifier: String
-    public let reason: String
-    public var suggestedFixes: [String] = []
-    
-    public init(identifier: String, reason: String) {
-        self.identifier = identifier
-        self.reason = reason
-    }
-}
+public let versions = Commands(
+    commands: [
+        "all": VersionAll(),
+        "latest": VersionLatest(),
+        "set": VersionSet()
+    ],
+    defaultCommand: "all"
+).group(help: [
+    "For interacting with dependency versions"
+])

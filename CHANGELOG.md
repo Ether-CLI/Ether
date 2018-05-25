@@ -1,3 +1,13 @@
+## [2018.05.25]
+
+### Added
+- `install-commit` configuration key.
+- `remove-commit` configuration key.
+- `signed-commits` configuration key.
+- Template command group.
+- `template list` command.
+- Default answer `n` for pre-release version install question.
+
 ## [2018.05.22]
  
 ### Fixed

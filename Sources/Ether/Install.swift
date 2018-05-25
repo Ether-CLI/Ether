@@ -85,6 +85,9 @@ public final class Install: Command {
             }
     
             context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
+            
+            let config = try Configuration.get()
+            try config.commit(with: config.installCommit, on: context, replacements: [name])
         }
     }
     
@@ -179,9 +182,9 @@ public final class Install: Command {
                     
                     while true {
                         answer = context.console.ask(
-                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/n)")
+                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)")
                         ).lowercased()
-                        if answer == "y" || answer == "n" { break }
+                        if answer == "y" || answer == "n" || answer == "" { break }
                     }
                     
                     if answer == "y" {

@@ -72,6 +72,10 @@ public final class Remove: Command {
         }
         
         context.console.print("📦  \(removed) packages removed")
+        
+        let config = try Configuration.get()
+        try config.commit(with: config.removeCommit, on: context, replacements: [name])
+        
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }

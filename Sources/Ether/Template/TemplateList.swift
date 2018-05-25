@@ -20,16 +20,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
-import Debugging
+import Command
 
-public struct EtherError: Error, Debuggable {
-    public let identifier: String
-    public let reason: String
-    public var suggestedFixes: [String] = []
+final class TemplateList: Command {
+    var arguments: [CommandArgument] = []
+    var options: [CommandOption] = []
     
-    public init(identifier: String, reason: String) {
-        self.identifier = identifier
-        self.reason = reason
+    var help: [String] = ["Lists all saved project templates"]
+    
+    func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
+        
+        let user = try Process.execute("whoami")
+        try FileManager.default.createDirectory(
+            at: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/Templates")!,
+            withIntermediateDirectories: true,
+            attributes: [:]
+        )
+        
+        let projects = try Process.execute("ls", "/Users/\(user)/Library/Application Support/Ether/Templates/")
+        for project in projects.split(separator: "\n").map(String.init) {
+            context.console.info("- ", newLine: false)
+            context.console.print(project)
+        }
+        
+        return context.container.eventLoop.newSucceededFuture(result: ())
     }
 }

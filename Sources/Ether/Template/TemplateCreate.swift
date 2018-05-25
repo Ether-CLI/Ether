@@ -24,15 +24,12 @@ import Foundation
 import Helpers
 import Command
 
-public final class Template: Command {
+public final class TemplateCreate: Command {
     public var arguments: [CommandArgument] = [
         CommandArgument.argument(name: "name", help: ["The name used to identify the template"])
     ]
     
-    public var options: [CommandOption] = [
-        CommandOption.flag(name: "remove", short: "r", help: ["Deletes the template"])
-        // TODO: Add `github` flag to create remote repo and push.
-    ]
+    public var options: [CommandOption] = []
     
     public var help: [String] = ["Creates and stores a template for use as the starting point of a project."]
     
@@ -40,11 +37,8 @@ public final class Template: Command {
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let name = try context.argument("name")
-        let removeTemplate = context.options["remove"] == nil ? false : true
-        let manager = FileManager.default
-        let barTitle = removeTemplate ? "Deleting Template" : "Saving Template"
         
-        let temapletBar = context.console.loadingBar(title: barTitle)
+        let temapletBar = context.console.loadingBar(title: "Saving Template")
         _ = temapletBar.start(on: context.container)
         
         let user = try Process.execute("whoami")
@@ -55,16 +49,11 @@ public final class Template: Command {
         )
         
         var isDir : ObjCBool = true
-        let directoryExists = manager.fileExists(atPath: "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)", isDirectory: &isDir)
-
-        if removeTemplate {
-            if !directoryExists { throw EtherError(identifier: "templateNotFound", reason: "No template with the name '\(name)' was found") }
-            _ = try Process.execute("rm", ["-rf", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
-        } else {
-            if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
-            let current = manager.currentDirectoryPath + "/."
-            _ = try Process.execute("cp", ["-a", "\(current)", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
-        }
+        let directoryExists = FileManager.default.fileExists(atPath: "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)", isDirectory: &isDir)
+        
+        if directoryExists { throw EtherError(identifier: "templateAlreadyExists", reason: "A template with the name '\(name)' was found") }
+        let current = FileManager.default.currentDirectoryPath + "/."
+        _ = try Process.execute("cp", ["-a", "\(current)", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
         
         temapletBar.succeed()
         return context.container.eventLoop.newSucceededFuture(result: ())

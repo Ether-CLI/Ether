@@ -24,7 +24,7 @@ import Console
 import Vapor
 import Ether
 
-let version = "2018.05.18"
+let version = "2018.05.25"
 
 let arguments = CommandLine.arguments
 if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
@@ -35,17 +35,6 @@ if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
 
 var services = Services.default()
 
-let versions = Commands(
-    commands: [
-        "all": VersionAll(),
-        "latest": VersionLatest(),
-        "set": VersionSet()
-    ],
-    defaultCommand: "all"
-).group(help: [
-    "For interacting with dependency versions"
-])
-
 var commands = CommandConfig()
 commands.use(Configuration(), as: "config")
 commands.use(FixInstall(), as: "fix-install")
@@ -53,8 +42,8 @@ commands.use(Install(), as: "install")
 commands.use(New(), as: "new")
 commands.use(Remove(), as: "remove")
 commands.use(Search(), as: "search")
-commands.use(Template(), as: "template")
 commands.use(Update(), as: "update")
+commands.use(template, as: "template")
 commands.use(versions, as: "version")
 
 services.register(commands)

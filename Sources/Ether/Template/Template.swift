@@ -20,16 +20,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
-import Debugging
+import Command
 
-public struct EtherError: Error, Debuggable {
-    public let identifier: String
-    public let reason: String
-    public var suggestedFixes: [String] = []
-    
-    public init(identifier: String, reason: String) {
-        self.identifier = identifier
-        self.reason = reason
-    }
-}
+public let template = Commands(
+    commands: [
+        "create": TemplateCreate(),
+        "remove": TemplateRemove(),
+        "list": TemplateList()
+    ],
+    defaultCommand: "list"
+).group(help: [
+    "For saving and deleting template projects"
+])
