@@ -125,4 +125,11 @@ public struct Config: Codable, Reflectable {
         }
         return token
     }
+    
+    func signed() -> Bool {
+        switch (self.signedCommits ?? "n").lowercased() {
+        case "true", "yes", "y", "1": return true
+        default: return false
+        }
+    }
 }
