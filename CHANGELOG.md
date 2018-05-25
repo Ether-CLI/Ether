@@ -1,4 +1,4 @@
-## [2018.xx.xx]
+## [2018.05.25]
 
 ### Added
 - `install-commit` configuration key.
