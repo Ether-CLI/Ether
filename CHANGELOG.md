@@ -3,6 +3,7 @@
 ### Added
 - `install-commit` configuration key.
 - `remove-commit` configuration key.
+- `signed-commits` configuration key.
 - Template command group.
 - `template list` command.
 
