@@ -73,10 +73,14 @@ public final class Remove: Command {
         
         context.console.print("📦  \(removed) packages removed")
         
-        if let commit = try Configuration.get().removeCommit {
+        let config = try Configuration.get()
+        if let commit = config.removeCommit {
             let message = commit.replacingOccurrences(of: "&0", with: name)
+            var commitOptions = ["commit", "-m"]
+            if config.signed() { commitOptions.append("-S") }
+            
             _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
-            let commitMessage = try Process.execute("git", "commit", "-m", message)
+            let commitMessage = try Process.execute("git", commitOptions + [message])
             context.console.print(commitMessage)
         }
         

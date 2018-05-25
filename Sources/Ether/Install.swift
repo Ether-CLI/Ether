@@ -86,10 +86,14 @@ public final class Install: Command {
     
             context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
             
-            if let commit = try Configuration.get().installCommit {
+            let config = try Configuration.get()
+            if let commit = config.installCommit {
                 let message = commit.replacingOccurrences(of: "&0", with: name)
+                var commitOptions = ["commit", "-m"]
+                if config.signed() { commitOptions.append("-S") }
+                
                 _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
-                let commitMessage = try Process.execute("git", "commit", "-m", message)
+                let commitMessage = try Process.execute("git", commitOptions + [message])
                 context.console.print(commitMessage)
             }
         }
