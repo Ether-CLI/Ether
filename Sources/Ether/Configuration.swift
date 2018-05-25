@@ -132,4 +132,19 @@ public struct Config: Codable, Reflectable {
         default: return false
         }
     }
+    
+    func commit(with message: String?, on context: CommandContext, replacements: [String] = [])throws {
+        if var commit = message {
+            for (index, value) in replacements.enumerated() {
+                commit = commit.replacingOccurrences(of: "&\(index)", with: value)
+            }
+            
+            var commitOptions = ["commit", "-m"]
+            if self.signed() { commitOptions.append("-S") }
+            
+            _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
+            let commitMessage = try Process.execute("git", commitOptions + [commit])
+            context.console.print(commitMessage)
+        }
+    }
 }
