@@ -6,6 +6,7 @@
 - `signed-commits` configuration key.
 - Template command group.
 - `template list` command.
+- Default answer `n` for pre-release version install question.
 
 ## [2018.05.22]
  
