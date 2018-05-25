@@ -87,7 +87,7 @@ public final class Install: Command {
             context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
             
             if let commit = try Configuration.get().installCommit {
-                let message = commit.replacingOccurrences(of: "$0", with: name)
+                let message = commit.replacingOccurrences(of: "&0", with: name)
                 _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
                 let commitMessage = try Process.execute("git", "commit", "-m", message)
                 context.console.print(commitMessage)

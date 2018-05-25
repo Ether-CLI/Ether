@@ -74,7 +74,7 @@ public final class Remove: Command {
         context.console.print("📦  \(removed) packages removed")
         
         if let commit = try Configuration.get().removeCommit {
-            let message = commit.replacingOccurrences(of: "$0", with: name)
+            let message = commit.replacingOccurrences(of: "&0", with: name)
             _ = try Process.execute("git", "add", "Package.swift", "Package.resolved")
             let commitMessage = try Process.execute("git", "commit", "-m", message)
             context.console.print(commitMessage)
