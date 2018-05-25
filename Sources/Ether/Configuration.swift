@@ -33,7 +33,7 @@ public class Configuration: Command {
             "The configuration JSON key to set",
             "Valid keys are:",
             "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token",
-            "- install-commit: The commit message to use one package install. Use $0 as package name placeholder"
+            "- install-commit: The commit message to use on package install. Use $0 as package name placeholder"
         ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
     ]
