@@ -39,7 +39,7 @@ public final class Update: Command {
             let updating = context.console.loadingBar(title: "Updating Ether")
             _ = updating.start(on: context.container)
             
-            _ = try Process.execute("bash", ["-c", "curl https://raw.githubusercontent.com/calebkleveter/Ether/master/install.sh | bash"])
+            _ = try Process.execute("bash", ["-c", "curl https://raw.githubusercontent.com/Ether-CLI/Ether/master/install.sh | bash"])
             
             updating.succeed()
             self.printEtherArt(with: context.console)
