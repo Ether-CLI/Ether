@@ -52,7 +52,7 @@ public final class VersionSet: Command {
         let version = try context.argument("version")
         let versionLitteral = try self.version(from: context.options, with: version)
         
-        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package == package }).first?.repositoryURL else {
+        guard let url = try Manifest.current.resolved().object.pins.filter({ $0.package.lowercased() == package.lowercased() }).first?.repositoryURL else {
             throw EtherError(identifier: "pinNotFound", reason: "No pin entry found for package name '\(package)'")
         }
         guard let dependency = try Manifest.current.dependency(withURL: url) else {

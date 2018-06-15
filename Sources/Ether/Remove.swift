@@ -44,7 +44,7 @@ public final class Remove: Command {
         let name = try context.argument("name")
         let pinCount = try Manifest.current.resolved().object.pins.count
         
-        guard let pin = try Manifest.current.resolved().object.pins.filter({ $0.package == name }).first else {
+        guard let pin = try Manifest.current.resolved().object.pins.filter({ $0.package.lowercased() == name.lowercased() }).first else {
             throw EtherError(identifier: "pinNotFound", reason: "No package was found with the name '\(name)'")
         }
         

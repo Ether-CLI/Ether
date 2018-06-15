@@ -7,6 +7,8 @@
 # Ether
 
 [![Mentioned in Awesome Vapor](https://awesome.re/mentioned-badge.svg)](https://github.com/Cellane/awesome-vapor)
+![Built with Swift 4.2](https://img.shields.io/badge/swift-4.2-orange.svg)
+
 
 ## What is it?
 
@@ -134,15 +136,36 @@ Example output:
 
     Updating Ether [Done]
 
-### Template
+### Template Create
 
 Saves the current state of the project as a template that can be used later when creating a new project.
 
-    ether template <name>
+    ether template create <name>
 
 Example output:
 
     Saving Template [Done]
+    
+### Template Remove
+
+Saves the current state of the project as a template that can be used later when creating a new project.
+
+    ether template remove <name>
+
+Example output:
+
+    Deleting Template [Done]
+    
+### Template List
+
+Saves the current state of the project as a template that can be used later when creating a new project.
+
+    ether template list
+
+Example output:
+
+    - Vapor
+    - CLI
 
 ### New
 
