@@ -2,15 +2,6 @@
   "object": {
     "pins": [
       {
-        "package": "Console",
-        "repositoryURL": "https://github.com/vapor/console.git",
-        "state": {
-          "branch": null,
-          "revision": "5b9796d39f201b3dd06800437abd9d774a455e57",
-          "version": "3.0.2"
-        }
-      },
-      {
         "package": "Core",
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
@@ -71,15 +62,6 @@
           "branch": null,
           "revision": "3219e328491b0853b8554c5a694add344d2c6cfb",
           "version": "3.0.1"
-        }
-      },
-      {
-        "package": "Service",
-        "repositoryURL": "https://github.com/vapor/service.git",
-        "state": {
-          "branch": null,
-          "revision": "281a70b69783891900be31a9e70051b6fe19e146",
-          "version": "1.0.0"
         }
       },
       {
