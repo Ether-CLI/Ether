@@ -1,3 +1,11 @@
+## [2018.06.15]
+
+### Added
+- `remove` and `version set` commands are case-insensitive.
+
+### Fixed
+- Some problem where the package data fetch would hang.
+
 ## [2018.05.25]
 
 ### Added
