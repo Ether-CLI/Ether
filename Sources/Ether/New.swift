@@ -60,7 +60,8 @@ public final class New: Command {
             let script = "mkdir \(name); cd \(name); swift package init --type=executable"
             _ = try Process.execute("bash", ["-c", script])
             
-            try Manifest.current.reset()
+            let currentDir = try Process.execute("pwd")
+            try Manifest(path: "file:\(currentDir)/\(name)/Package.swift").reset()
             return true
         }
         return false
@@ -88,6 +89,8 @@ public final class New: Command {
         let name = try context.argument("name")
         let script = "mkdir \(name); cd \(name); swift package init"
         _ = try Process.execute("bash", ["-c", script])
-        try Manifest.current.reset()
+        
+        let currentDir = try Process.execute("pwd")
+        try Manifest(path: "file:\(currentDir)/\(name)/Package.swift").reset()
     }
 }
