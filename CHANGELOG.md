@@ -1,3 +1,13 @@
+## [2018.08.11]
+
+### Fixed
+- `new` command no longer fails when cleaning new project's manifest.
+- Dependency writing when last dependency has a trailing comma.
+- White space when adding first dependency to manifest.
+
+### Added
+- 
+
 ## [2018.06.15]
 
 ### Added
