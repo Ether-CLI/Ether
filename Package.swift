@@ -9,6 +9,7 @@ let package = Package(
         .library(name: "Ether", targets: ["Helpers", "Ether"])
     ],
     dependencies: [
+        .package(url: "https://github.com/tuist/xcodeproj.git", from: "4.3.0"),
         .package(url: "https://github.com/vapor/vapor.git", from: "3.0.3"),
         .package(url: "https://github.com/vapor/console.git", from: "3.0.2"),
         .package(url: "https://github.com/vapor/core.git", from: "3.1.7"),
@@ -16,7 +17,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "Helpers", dependencies: ["Core", "Console"]),
-        .target(name: "Ether", dependencies: ["Vapor", "Helpers", "Console", "Command", "Manifest", "Core"]),
+        .target(name: "Ether", dependencies: ["Vapor", "Helpers", "Console", "Command", "Manifest", "Core", "xcproj"]),
         .target(name: "Executable", dependencies: ["Vapor", "Ether", "Console"])
     ]
 )
