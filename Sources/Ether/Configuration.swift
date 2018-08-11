@@ -40,7 +40,9 @@ public class Configuration: Command {
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
     ]
     
-    public var options: [CommandOption] = []
+    public var options: [CommandOption] = [
+        CommandOption.flag(name: "print", short: "p", help: ["Outputs config key value. 'value' argument must have a value passed in, but it will not be used."])
+    ]
     
     public var help: [String] = ["Configure custom actions to occure when a command is run"]
     
@@ -48,11 +50,15 @@ public class Configuration: Command {
     
     public func run(using context: CommandContext) throws -> EventLoopFuture<Void> {
         let setter = context.console.loadingBar(title: "Setting Configuration Key")
-        _ = setter.start(on: context.container)
         
+        let shouldPrint = context.options["print"] != nil
         let key = try context.argument("key")
         let value = context.arguments["value"]
         let user = try Process.execute("whoami")
+        
+        if !shouldPrint {
+            _ = setter.start(on: context.container)
+        }
         
         var configuration = try Configuration.get()
         
@@ -60,11 +66,17 @@ public class Configuration: Command {
             throw EtherError(identifier: "noSettingWithName", reason: "No configuration setting found with name '\(key)'")
         }
         
-        configuration[keyPath: property] = value
+        if shouldPrint {
+            context.console.print(configuration[keyPath: property] ?? "nil")
+        } else {
+            configuration[keyPath: property] = value
+        }
         
         try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
         
-        setter.succeed()
+        if !shouldPrint {
+            setter.succeed()
+        }
         return context.container.eventLoop.newSucceededFuture(result: ())
     }
     
