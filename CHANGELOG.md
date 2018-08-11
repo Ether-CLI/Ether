@@ -6,7 +6,8 @@
 - White space when adding first dependency to manifest.
 
 ### Added
-- 
+- `--print/-p` flag to `config` command to output config values.
+- `test` command, for formatted output when running `swift test`.
 
 ## [2018.06.15]
 
