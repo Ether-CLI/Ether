@@ -43,6 +43,7 @@ commands.use(New(), as: "new")
 commands.use(Remove(), as: "remove")
 commands.use(Search(), as: "search")
 commands.use(Update(), as: "update")
+commands.use(Test(), as: "test")
 commands.use(template, as: "template")
 commands.use(versions, as: "version")
 
