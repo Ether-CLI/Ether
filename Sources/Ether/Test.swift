@@ -81,6 +81,7 @@ public final class Test: Command {
             pattern: "^.*?\\.swift:\\d+: Test Case '-\\[(.*?) (.*?)\\]' measured \\[Time, seconds\\] average: (.*?), relative standard deviation: (.*?), values: \\[(.*?)\\], performanceMetricID:com.apple.XCTPerformanceMetric_WallClockTime, baselineName: \"(.*?)\", baselineAverage: (.*?), maxPercentRegression: (.*?), maxPercentRelativeStandardDeviation: (.*?), maxRegression: (.*?), maxStandardDeviation: (.*?)",
             options: []
         )
+        let fatal = try! NSRegularExpression(pattern: "Fatal error: (.*)", options: [])
         
         func text(for test: String) -> ConsoleText? {
             if building.matches(in: test, options: [], range: test.range).count > 0 && compiling == false {
@@ -152,6 +153,11 @@ public final class Test: Command {
                 )
                 return [output]
                 
+            } else if let fatal = fatal.matches(in: test, options: [], range: test.range).first {
+                return [
+                    ConsoleTextFragment(string: "Fatal Error: ", style: ConsoleStyle(color: .brightRed, background: nil, isBold: true)),
+                    ConsoleTextFragment(string: test.substring(at: fatal.range(at: 1)) ?? "")
+                ]
             } else {
                 return nil
             }
