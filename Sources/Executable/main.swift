@@ -24,7 +24,7 @@ import Console
 import Vapor
 import Ether
 
-let version = "2018.05.25"
+let version = "2018.08.11"
 
 let arguments = CommandLine.arguments
 if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
