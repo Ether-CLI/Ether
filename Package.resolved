@@ -38,6 +38,15 @@
         }
       },
       {
+        "package": "Files",
+        "repositoryURL": "https://github.com/JohnSundell/Files.git",
+        "state": {
+          "branch": null,
+          "revision": "06f95bd1bf4f8d5f50bc6bb30b808c253acd4c88",
+          "version": "2.2.1"
+        }
+      },
+      {
         "package": "HTTP",
         "repositoryURL": "https://github.com/vapor/http.git",
         "state": {
@@ -188,6 +197,15 @@
           "branch": null,
           "revision": "e787c68092e28fe2b34205fc1b62de431922c243",
           "version": "4.3.0"
+        }
+      },
+      {
+        "package": "Xgen",
+        "repositoryURL": "https://github.com/JohnSundell/Xgen.git",
+        "state": {
+          "branch": null,
+          "revision": "a8787177ed55fc7a530f5ffcea9183978d7fb232",
+          "version": "2.1.0"
         }
       }
     ]
