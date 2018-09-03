@@ -46,15 +46,28 @@ done
 cd ../
 git clone git@github.com:Ether-CLI/homebrew-tap.git
 cd homebrew-tap
-awk '{gsub(/version \".*?\"/,"version \"$TAG\"")}' ether.rb
-awk '{gsub(/sha256 \".*?\"/,"sha256 \"$HASH\"")}' ether.rb
+
+cat > ether.rb <<- EOM
+class Ether < Formula
+  homepage "https://github.com/Ether-CLI/Ether"
+  version "$TAG"
+  url "https://github.com/calebkleveter/Ether/releases/download/#{version}/macOS-sierra.tar.gz"
+  sha256 "$HASH"
+
+  depends_on "libressl"
+
+  def install
+    bin.install "ether"
+  end
+end
+EOM
+
 git add .
 git commit -S -m "Updated Ether version to $TAG"
 git push origin master
 cd ../
-rm -rf homebrew-tap
 
-#echo "The new hash for the formula is $HASH"
+rm -rf homebrew-tap
 rm -rf macOS-sierra.tar.gz
 rm -rf $PACKAGE_NAME
 rm install
