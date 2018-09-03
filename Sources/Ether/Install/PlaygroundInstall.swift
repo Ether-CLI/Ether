@@ -1,3 +1,5 @@
+#if !os(Linux)
+
 // The MIT License (MIT)
 //
 // Copyright (c) 2017 Caleb Kleveter
@@ -54,7 +56,7 @@ extension Install {
         }
         
         
-        _ = try Process.execute("git", "clone", package, "./" + name + ".xcworkspace/Projects/" + packageName, "--depth=1")
+        _ = try Process.execute("git", "clone", package, "./" + name + ".xcworkspace/Projects/" + packageName, "-b=" + tag, "--depth=1")
         _ = try Process.execute("bash", "-c", "cd " + name + ".xcworkspace/Projects/" + packageName + "; swift package generate-xcodeproj;")
         
         
@@ -74,3 +76,5 @@ extension Install {
         return context.container.future()
     }
 }
+
+#endif
