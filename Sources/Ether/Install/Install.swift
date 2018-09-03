@@ -41,9 +41,37 @@ public final class Install: Command {
     
     public var help: [String] = ["Installs a package into the current project"]
     
-    public init() {}
+    public init() {
+        #if !os(Linux)
+        self.options.append(
+            CommandOption.value(name: "playground", short: "p", help: [
+                "The name of the playground to install the package to, if you want to install the package to a playground."
+            ])
+        )
+        #endif
+    }
     
     public func run(using context: CommandContext) throws -> Future<Void> {
+        #if !os(Linux)
+        if let playground = context.options["playground"] {
+            let installing = context.console.loadingBar(title: "Installing Dependency")
+            _ = installing.start(on: context.container)
+            
+            let name = try context.argument("name")
+            return try self.package(with: name, on: context).flatMap { package in
+                return try self.playground(playground, install: package.url, at: package.version, context: context)
+                }.map {
+                    installing.succeed()
+            }
+        } else {
+            return try install(using: context)
+        }
+        #else
+        return try install(using: context)
+        #endif
+    }
+    
+    func install(using context: CommandContext)throws -> Future<Void> {
         context.console.info("Reading Package Targets...")
         let targets = try Manifest.current.targets().map { $0.name }
         let approvedTargets = self.inquireFor(targets: targets, in: context)
@@ -83,7 +111,7 @@ public final class Install: Command {
                 xcodeBar.succeed()
                 _ = try Process.execute("sh", "-c", "open *.xcodeproj")
             }
-    
+            
             context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
             
             let config = try Configuration.get()
