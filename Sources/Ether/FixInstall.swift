@@ -36,7 +36,7 @@ public final class FixInstall: Command {
         let fixing = context.console.loadingBar(title: "Fixing Instillation")
         _ = fixing.start(on: context.container)
         
-        _ = try Process.execute("rm", ["--rf", ".build"])
+        _ = try Process.execute("rm", ["-rf", ".build"])
         _ = try Process.execute("swift", ["package", "update"])
         _ = try Process.execute("swift", ["package", "resolve"])
         
