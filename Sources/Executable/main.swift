@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 import Console
+import Helpers
 import Vapor
 import Ether
 
@@ -51,8 +52,8 @@ services.register(commands)
 
 do {
     try Application.asyncBoot(services: services).wait().run()
-} catch {
+} catch let error {
     print("Error:", error)
-    exit(1)
+    exit((error as? EtherError)?.exit ?? 1)
 }
 
