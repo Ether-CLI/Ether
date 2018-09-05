@@ -56,13 +56,13 @@ public final class Install: Command {
         #if !os(Linux)
         if let playground = context.options["playground"] {
             let installing = context.console.loadingBar(title: "Installing Dependency")
-            _ = installing.start(on: context.container)
             
             let name = try context.argument("name")
             return try self.package(with: name, on: context).flatMap { package in
+                _ = installing.start(on: context.container)
                 return try self.playground(playground, install: package.url, at: package.version, context: context)
-                }.map {
-                    installing.succeed()
+            }.map {
+                installing.succeed()
             }
         } else {
             return try install(using: context)
