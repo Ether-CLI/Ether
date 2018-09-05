@@ -1,7 +1,8 @@
-## [2018.09.02]
+## [2018.09.05]
 
 ### Added
 - A `-p,--playground` option to the `install` command to install dependencies to an Xcode Playground instead of an SPM project. 
+- `-t,--targets` flag to the `install` command, which specifies which targets the new dependency will be added to.
 
 ## [2018.08.11]
 
