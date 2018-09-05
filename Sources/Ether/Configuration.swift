@@ -72,9 +72,8 @@ public class Configuration: Command {
             configuration[keyPath: property] = value
         }
         
-        try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
-        
         if !shouldPrint {
+            try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
             setter.succeed()
         }
         return context.container.eventLoop.newSucceededFuture(result: ())
