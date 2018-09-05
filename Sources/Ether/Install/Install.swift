@@ -196,7 +196,10 @@ public final class Install: Command {
     
     fileprivate func version(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<String> {
         let client = try context.container.make(Client.self)
-        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/releases", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [String].self) { response in
+        return client.get(
+            "https://package.vapor.cloud/packages/\(owner)/\(repo)/releases",
+            headers: ["Authorization":"Bearer \(token)"]
+        ).flatMap(to: [String].self) { response in
             return try response.content.decode([String].self)
         }.map(to: String.self) { releases in
             guard let first = releases.first else {
@@ -213,7 +216,9 @@ public final class Install: Command {
                     
                     while true {
                         answer = context.console.ask(
-                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)")
+                            ConsoleText(
+                                stringLiteral: "The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)"
+                            )
                         ).lowercased()
                         if answer == "y" || answer == "n" || answer == "" { break }
                     }
@@ -234,13 +239,17 @@ public final class Install: Command {
     
     fileprivate func products(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<[String]> {
         let client = try context.container.make(Client.self)
-        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/manifest", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [Product].self) { response in
+        return client.get(
+            "https://package.vapor.cloud/packages/\(owner)/\(repo)/manifest",
+            headers: ["Authorization":"Bearer \(token)"]
+        ).flatMap(to: [Product].self) { response in
             return response.content.get([Product].self, at: "products")
         }.map(to: [String].self) { products in
             if let index = products.index(where: { $0.name.lowercased() == repo.lowercased() }) {
                 return [products[index].name]
             }
             if products.count < 1 { return [repo] }
+            if products.count == 1 { return [products.first?.name].compactMap { $0 } }
             
             var allowed: [String]? = nil
             
