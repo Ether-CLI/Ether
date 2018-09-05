@@ -209,28 +209,25 @@ public final class Install: Command {
                 )
             }
             
-            if first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha") {
-                let majorVersion = Int(String(first.first ?? "0")) ?? 0
-                if majorVersion > 0 && releases.count > 1 {
-                    var answer: String = "replace"
-                    
-                    while true {
-                        answer = context.console.ask(
-                            ConsoleText(
-                                stringLiteral: "The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)"
-                            )
-                        ).lowercased()
-                        if answer == "y" || answer == "n" || answer == "" { break }
-                    }
-                    
-                    if answer == "y" {
-                        return releases.filter { Int(String($0.first ?? "0")) ?? 0 != majorVersion }.first ?? first
-                    } else {
-                        return first
-                    }
-                } else {
-                    return first
-                }
+            if !(first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha")) { return first }
+            let majorVersion = Int(String(first.first ?? "0")) ?? 0
+            if !(majorVersion > 0 && releases.count > 1) { return first }
+            
+            var answer: String = "replace"
+            while true {
+                answer = context.console.ask(
+                    ConsoleText(
+                        stringLiteral: "The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)"
+                    )
+                ).lowercased()
+                if answer == "y" || answer == "n" || answer == "" { break }
+            }
+            
+            if answer == "y" {
+                return releases.filter { release in
+                    let version = release.lowercased()
+                    return !(version.contains("rc") || version.contains("beta") || version.contains("alpha"))
+                }.first ?? first
             } else {
                 return first
             }
