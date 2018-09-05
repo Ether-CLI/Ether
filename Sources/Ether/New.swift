@@ -51,7 +51,7 @@ public final class New: Command {
         }
 
         newProject.succeed()
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     func newExecutable(from context: CommandContext) throws -> Bool {

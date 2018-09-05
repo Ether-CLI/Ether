@@ -65,7 +65,7 @@ public final class Update: Command {
             }
         }
         
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     private func printEtherArt(with console: Console) {

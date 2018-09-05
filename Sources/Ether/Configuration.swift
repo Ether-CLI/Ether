@@ -76,7 +76,7 @@ public class Configuration: Command {
             try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
             setter.succeed()
         }
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     public static func get()throws -> Config {

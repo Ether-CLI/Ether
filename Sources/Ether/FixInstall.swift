@@ -42,6 +42,6 @@ public final class FixInstall: Command {
         
         fixing.succeed()
         
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
 }

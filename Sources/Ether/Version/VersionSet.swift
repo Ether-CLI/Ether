@@ -72,7 +72,7 @@ public final class VersionSet: Command {
             _ = try Process.execute("/bin/sh", "-c", "open *.xcodeproj")
         }
         
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     private func version(from options: [String: String], with version: String)throws -> DependencyVersionType {

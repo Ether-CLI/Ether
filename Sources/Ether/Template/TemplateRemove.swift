@@ -55,6 +55,6 @@ public final class TemplateRemove: Command {
         _ = try Process.execute("rm", ["-rf", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
         
         temapletBar.succeed()
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
 }

@@ -50,6 +50,6 @@ public final class VersionAll: Command {
             context.console.print(version)
         }
         
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
 }

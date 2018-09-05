@@ -43,6 +43,6 @@ final class TemplateList: Command {
             context.console.print(project)
         }
         
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
 }
