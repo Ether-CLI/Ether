@@ -90,7 +90,8 @@ public final class Install: Command {
         return try self.package(with: name, on: context).map(to: Void.self) { package in
             _ = installing.start(on: context.container)
             
-            let dependency = Dependency(url: package.url, version: .from(package.version))
+            let version = package.version.first == "v" ? String(package.version.dropFirst()) : package.version
+            let dependency = Dependency(url: package.url, version: .from(version))
             try dependency.save()
             
             try approvedTargets.forEach { name in
@@ -176,7 +177,6 @@ public final class Install: Command {
             let names = fullName.split(separator: "/").map(String.init)
             return try self.version(owner: names[0], repo: names[1], token: token, on: context)
         }.map(to: String.self) { version in
-            if version.first == "v" { return String(version.dropFirst()) }
             return version
         }
         

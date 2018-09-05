@@ -56,12 +56,13 @@ extension Install {
         }
         
         
-        _ = try Process.execute("git", "clone", package, "./" + name + ".xcworkspace/Projects/" + packageName, "-b=" + tag, "--depth=1")
+        _ = try Process.execute("git", "clone", package, "./" + name + ".xcworkspace/Projects/" + packageName, "-b" + tag, "--depth=1")
         _ = try Process.execute("bash", "-c", "cd " + name + ".xcworkspace/Projects/" + packageName + "; swift package generate-xcodeproj;")
         
         
         let depenencies = try Process.execute("ls", name + ".xcworkspace/Projects/").split(separator: "\n").map(String.init)
         let xcodeProjs = try Process.execute("bash", "-c", "ls " + name + ".xcworkspace/Projects/* | grep '.xcodeproj'").split(separator: "\n").map(String.init)
+        let scheme = String(zip(depenencies, xcodeProjs).filter { $0.0 == packageName }.first?.1.split(separator: ".").first ?? "")
         
         for dependency in zip(depenencies, xcodeProjs) {
             let dependencyPath: String = name + ".xcworkspace/Projects/" + dependency.0 + "/" + dependency.1
@@ -70,7 +71,7 @@ extension Install {
         
         
         try workspace.generate()
-        _ = try Process.execute("xcodebuild", "-workspace", name + ".xcworkspace", "-scheme", packageName + "-Package")
+        _ = try Process.execute("xcodebuild", "-workspace", name + ".xcworkspace", "-scheme", scheme + "-Package")
         _ = try Process.execute("sh", "-c", "open " + name + ".xcworkspace")
         
         return context.container.future()
