@@ -35,7 +35,8 @@ public final class Install: Command {
         CommandOption.value(name: "version", short: "v", help: [
                 "The desired version for the package",
                 "This defaults to the latest version"
-            ]),
+        ]),
+        CommandOption.value(name: "targets", short: "t", help: ["A comma separated list of the targets to add the new dependency to"]),
         CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate the Xcode project after the install is complete"])
     ]
     
@@ -74,7 +75,9 @@ public final class Install: Command {
     func install(using context: CommandContext)throws -> Future<Void> {
         context.console.info("Reading Package Targets...")
         let targets = try Manifest.current.targets().map { $0.name }
-        let approvedTargets = self.inquireFor(targets: targets, in: context)
+        let approvedTargets =
+            context.options["targets"]?.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ??
+            self.inquireFor(targets: targets, in: context)
         
         let installing = context.console.loadingBar(title: "Installing Dependency")
         
