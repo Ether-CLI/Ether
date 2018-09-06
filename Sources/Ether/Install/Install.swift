@@ -35,18 +35,50 @@ public final class Install: Command {
         CommandOption.value(name: "version", short: "v", help: [
                 "The desired version for the package",
                 "This defaults to the latest version"
-            ]),
+        ]),
+        CommandOption.value(name: "targets", short: "t", help: ["A comma separated list of the targets to add the new dependency to"]),
         CommandOption.flag(name: "xcode", short: "x", help: ["Regenerate the Xcode project after the install is complete"])
     ]
     
     public var help: [String] = ["Installs a package into the current project"]
     
-    public init() {}
+    public init() {
+        #if !os(Linux)
+        self.options.append(
+            CommandOption.value(name: "playground", short: "p", help: [
+                "The name of the playground to install the package to, if you want to install the package to a playground",
+                "Dependencies that use C module maps are note yet supported. This includes packages such as Swift NIO"
+            ])
+        )
+        #endif
+    }
     
     public func run(using context: CommandContext) throws -> Future<Void> {
+        #if !os(Linux)
+        if let playground = context.options["playground"] {
+            let installing = context.console.loadingBar(title: "Installing Dependency")
+            
+            let name = try context.argument("name")
+            return try self.package(with: name, on: context).flatMap { package in
+                _ = installing.start(on: context.container)
+                return try self.playground(playground, install: package.url, at: package.version, context: context)
+            }.map {
+                installing.succeed()
+            }
+        } else {
+            return try install(using: context)
+        }
+        #else
+        return try install(using: context)
+        #endif
+    }
+    
+    func install(using context: CommandContext)throws -> Future<Void> {
         context.console.info("Reading Package Targets...")
         let targets = try Manifest.current.targets().map { $0.name }
-        let approvedTargets = self.inquireFor(targets: targets, in: context)
+        let approvedTargets =
+            context.options["targets"]?.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } ??
+            self.inquireFor(targets: targets, in: context)
         
         let installing = context.console.loadingBar(title: "Installing Dependency")
         
@@ -62,7 +94,8 @@ public final class Install: Command {
         return try self.package(with: name, on: context).map(to: Void.self) { package in
             _ = installing.start(on: context.container)
             
-            let dependency = Dependency(url: package.url, version: .from(package.version))
+            let version = package.version.first == "v" ? String(package.version.dropFirst()) : package.version
+            let dependency = Dependency(url: package.url, version: .from(version))
             try dependency.save()
             
             try approvedTargets.forEach { name in
@@ -83,7 +116,7 @@ public final class Install: Command {
                 xcodeBar.succeed()
                 _ = try Process.execute("sh", "-c", "open *.xcodeproj")
             }
-    
+            
             context.console.output("📦  \(newPinCount - oldPinCount) packages installed", style: .plain, newLine: true)
             
             let config = try Configuration.get()
@@ -148,7 +181,6 @@ public final class Install: Command {
             let names = fullName.split(separator: "/").map(String.init)
             return try self.version(owner: names[0], repo: names[1], token: token, on: context)
         }.map(to: String.self) { version in
-            if version.first == "v" { return String(version.dropFirst()) }
             return version
         }
         
@@ -165,7 +197,10 @@ public final class Install: Command {
     
     fileprivate func version(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<String> {
         let client = try context.container.make(Client.self)
-        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/releases", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [String].self) { response in
+        return client.get(
+            "https://package.vapor.cloud/packages/\(owner)/\(repo)/releases",
+            headers: ["Authorization":"Bearer \(token)"]
+        ).flatMap(to: [String].self) { response in
             return try response.content.decode([String].self)
         }.map(to: String.self) { releases in
             guard let first = releases.first else {
@@ -175,26 +210,25 @@ public final class Install: Command {
                 )
             }
             
-            if first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha") {
-                let majorVersion = Int(String(first.first ?? "0")) ?? 0
-                if majorVersion > 0 && releases.count > 1 {
-                    var answer: String = "replace"
-                    
-                    while true {
-                        answer = context.console.ask(
-                            ConsoleText(stringLiteral:"The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)")
-                        ).lowercased()
-                        if answer == "y" || answer == "n" || answer == "" { break }
-                    }
-                    
-                    if answer == "y" {
-                        return releases.filter { Int(String($0.first ?? "0")) ?? 0 != majorVersion }.first ?? first
-                    } else {
-                        return first
-                    }
-                } else {
-                    return first
-                }
+            if !(first.lowercased().contains("rc") || first.lowercased().contains("beta") || first.lowercased().contains("alpha")) { return first }
+            let majorVersion = Int(String(first.first ?? "0")) ?? 0
+            if !(majorVersion > 0 && releases.count > 1) { return first }
+            
+            var answer: String = "replace"
+            while true {
+                answer = context.console.ask(
+                    ConsoleText(
+                        stringLiteral: "The latest version found (\(first)) is a pre-release. Would you like to use an earlier stable release? (y/N)"
+                    )
+                ).lowercased()
+                if answer == "y" || answer == "n" || answer == "" { break }
+            }
+            
+            if answer == "y" {
+                return releases.filter { release in
+                    let version = release.lowercased()
+                    return !(version.contains("rc") || version.contains("beta") || version.contains("alpha"))
+                }.first ?? first
             } else {
                 return first
             }
@@ -203,13 +237,17 @@ public final class Install: Command {
     
     fileprivate func products(owner: String, repo: String, token: String, on context: CommandContext)throws -> Future<[String]> {
         let client = try context.container.make(Client.self)
-        return client.get("https://package.vapor.cloud/packages/\(owner)/\(repo)/manifest", headers: ["Authorization":"Bearer \(token)"]).flatMap(to: [Product].self) { response in
+        return client.get(
+            "https://package.vapor.cloud/packages/\(owner)/\(repo)/manifest",
+            headers: ["Authorization":"Bearer \(token)"]
+        ).flatMap(to: [Product].self) { response in
             return response.content.get([Product].self, at: "products")
         }.map(to: [String].self) { products in
             if let index = products.index(where: { $0.name.lowercased() == repo.lowercased() }) {
                 return [products[index].name]
             }
             if products.count < 1 { return [repo] }
+            if products.count == 1 { return [products.first?.name].compactMap { $0 } }
             
             var allowed: [String]? = nil
             

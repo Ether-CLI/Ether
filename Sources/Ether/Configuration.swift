@@ -33,8 +33,8 @@ public class Configuration: Command {
             "The configuration JSON key to set",
             "Valid keys are:",
             "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token",
-            "- install-commit: The commit message to use on package install. Use &0 as package name placeholder",
-            "- remove-commit: The commit message to use on when a package is removed. Use &0 as package name placeholder",
+            "- install-commit: The commit message to use on package install. Use '&0' as package name placeholder",
+            "- remove-commit: The commit message to use on when a package is removed. Use '&0' as package name placeholder",
             "- signed-commits: If set to a truthy value (true, yes, y, 1), auto-commits will pass in the '-S' flag"
         ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
@@ -72,12 +72,11 @@ public class Configuration: Command {
             configuration[keyPath: property] = value
         }
         
-        try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
-        
         if !shouldPrint {
+            try JSONEncoder().encode(configuration).write(to: URL(string: "file:/Users/\(user)/Library/Application%20Support/Ether/config.json")!)
             setter.succeed()
         }
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     public static func get()throws -> Config {

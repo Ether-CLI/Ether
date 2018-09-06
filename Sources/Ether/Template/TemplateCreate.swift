@@ -56,6 +56,6 @@ public final class TemplateCreate: Command {
         _ = try Process.execute("cp", ["-a", "\(current)", "/Users/\(user)/Library/Application Support/Ether/Templates/\(name)"])
         
         temapletBar.succeed()
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
 }

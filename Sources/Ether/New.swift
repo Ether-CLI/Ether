@@ -51,7 +51,7 @@ public final class New: Command {
         }
 
         newProject.succeed()
-        return context.container.eventLoop.newSucceededFuture(result: ())
+        return context.container.future()
     }
     
     func newExecutable(from context: CommandContext) throws -> Bool {
@@ -72,14 +72,10 @@ public final class New: Command {
             let name = try context.argument("name")
             let manager = FileManager.default
 
-            if #available(OSX 10.12, *) {
-                let directoryName = manager.homeDirectoryForCurrentUser.absoluteString
-                let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".dropFirst(7))
-                let current = manager.currentDirectoryPath
-                _ = try Process.execute("cp", ["-a", "\(templatePath)", "\(current)/\(name)"])
-            } else {
-                throw EtherError(identifier: "unsupportedOS", reason: "This command is not supported in macOS versions older then 10.12")
-            }
+            let directoryName = try Process.execute("echo", "$HOME")
+            let templatePath = String("\(directoryName)Library/Application Support/Ether/Templates/\(template)".dropFirst(7))
+            let current = manager.currentDirectoryPath
+            _ = try Process.execute("cp", ["-a", "\(templatePath)", "\(current)/\(name)"])
             return true
         }
         return false

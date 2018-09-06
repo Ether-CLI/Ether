@@ -21,10 +21,11 @@
 // SOFTWARE.
 
 import Console
+import Helpers
 import Vapor
 import Ether
 
-let version = "2018.08.11"
+let version = "master"
 
 let arguments = CommandLine.arguments
 if arguments.count == 2, arguments[1] == "--version" || arguments[1] == "-v" {
@@ -51,8 +52,8 @@ services.register(commands)
 
 do {
     try Application.asyncBoot(services: services).wait().run()
-} catch {
+} catch let error {
     print("Error:", error)
-    exit(1)
+    exit((error as? EtherError)?.exit ?? 1)
 }
 

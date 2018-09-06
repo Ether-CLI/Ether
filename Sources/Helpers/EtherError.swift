@@ -24,12 +24,14 @@ import Foundation
 import Debugging
 
 public struct EtherError: Error, Debuggable {
+    public let exit: Int32
     public let identifier: String
     public let reason: String
     public var suggestedFixes: [String] = []
     
-    public init(identifier: String, reason: String) {
+    public init(identifier: String, reason: String, exit: Int32 = 1) {
         self.identifier = identifier
         self.reason = reason
+        self.exit = exit
     }
 }

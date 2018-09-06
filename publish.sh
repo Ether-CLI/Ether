@@ -2,8 +2,14 @@ echo "📦  Updating Swift packages..."
 swift package update
 swift package resolve
 
+
 echo "📦  Determining latest Git tag..."
 TAG=$(git describe --abbrev=0 --tags);
+
+echo "📦  Updating compiled version to $TAG..."
+cat ./Sources/Executable/main.swift | \
+    awk -v tag="$TAG" '/let version = "master"/ { printf "let version = \"%s\"\n", tag; next } 1' > .tmp && \
+    mv .tmp Sources/Executable/main.swift;
 
 echo "📦  Building..."
 swift build -c release -Xswiftc -static-stdlib
@@ -37,7 +43,31 @@ while true; do
     esac
 done
 
-echo "The new hash for the formula is $HASH"
+cd ../
+git clone git@github.com:Ether-CLI/homebrew-tap.git
+cd homebrew-tap
+
+cat > ether.rb <<- EOM
+class Ether < Formula
+  homepage "https://github.com/Ether-CLI/Ether"
+  version "$TAG"
+  url "https://github.com/calebkleveter/Ether/releases/download/#{version}/macOS-sierra.tar.gz"
+  sha256 "$HASH"
+
+  depends_on "libressl"
+
+  def install
+    bin.install "ether"
+  end
+end
+EOM
+
+git add .
+git commit -S -m "Updated Ether version to $TAG"
+git push origin master
+cd ../
+
+rm -rf homebrew-tap
 rm -rf macOS-sierra.tar.gz
 rm -rf $PACKAGE_NAME
 rm install
