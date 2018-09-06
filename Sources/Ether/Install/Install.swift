@@ -46,7 +46,8 @@ public final class Install: Command {
         #if !os(Linux)
         self.options.append(
             CommandOption.value(name: "playground", short: "p", help: [
-                "The name of the playground to install the package to, if you want to install the package to a playground."
+                "The name of the playground to install the package to, if you want to install the package to a playground",
+                "Dependencies that use C module maps are note yet supported. This includes packages such as Swift NIO"
             ])
         )
         #endif
