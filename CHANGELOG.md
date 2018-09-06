@@ -1,4 +1,4 @@
-## [2018.09.05]
+## [2018.09.08]
 
 ### Added
 - A `-p,--playground` option to the `install` command to install dependencies to an Xcode Playground instead of an SPM project. Playground installs do not support packages the use C module maps.
