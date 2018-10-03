@@ -37,6 +37,7 @@ public class Configuration: Command {
             "- remove-commit: The commit message to use when a package is removed. Use '&0' as package name placeholder",
             "- new-commit: The commit message to use when a new project is generated. Use '&0' as the project name placeholder",
             "- update-commit: The commit message to use when a project's packages are updated",
+            "- version-latest-commit: The commit message to use when you update a project's dependencies to their latest versions",
             "- signed-commits: If set to a truthy value (true, yes, y, 1), auto-commits will pass in the '-S' flag"
         ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
@@ -116,6 +117,7 @@ public struct Config: Codable, Reflectable {
     public var removeCommit: String?
     public var newCommit: String?
     public var updateCommit: String?
+    public var latestVersionCommit: String?
     public var signedCommits: String?
     
     static let properties: [String: WritableKeyPath<Config, String?>] = [
@@ -124,6 +126,7 @@ public struct Config: Codable, Reflectable {
         "remove-commit": \.removeCommit,
         "new-commit": \.newCommit,
         "update-commit": \.updateCommit,
+        "version-latest-commit": \.latestVersionCommit,
         "signed-commits": \.signedCommits
     ]
     
