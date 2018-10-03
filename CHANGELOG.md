@@ -1,3 +1,8 @@
+## [2018.10.03]
+
+### Added
+- `new-commit` configuration for auto committing when a new project is generated.
+
 ## [2018.09.08]
 
 ### Added
