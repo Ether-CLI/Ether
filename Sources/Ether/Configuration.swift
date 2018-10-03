@@ -34,7 +34,8 @@ public class Configuration: Command {
             "Valid keys are:",
             "- access-token: The GitHub access token to use for interacting the the GraphQL API. You can create on at https://github.com/settings/token",
             "- install-commit: The commit message to use on package install. Use '&0' as package name placeholder",
-            "- remove-commit: The commit message to use on when a package is removed. Use '&0' as package name placeholder",
+            "- remove-commit: The commit message to use when a package is removed. Use '&0' as package name placeholder",
+            "- new-commit: The commit message to use when a new project is generated. Use '&0' as the project name placeholder",
             "- signed-commits: If set to a truthy value (true, yes, y, 1), auto-commits will pass in the '-S' flag"
         ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
@@ -112,12 +113,14 @@ public struct Config: Codable, Reflectable {
     public var accessToken: String?
     public var installCommit: String?
     public var removeCommit: String?
+    public var newCommit: String?
     public var signedCommits: String?
     
     static let properties: [String: WritableKeyPath<Config, String?>] = [
         "access-token": \.accessToken,
         "install-commit": \.installCommit,
         "remove-commit": \.removeCommit,
+        "new-commit": \.newCommit,
         "signed-commits": \.signedCommits
     ]
     
