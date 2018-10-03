@@ -4,6 +4,7 @@
 - `new-commit` configuration for auto committing when a new project is generated.
 - `update-commit` configuration for auto committing when a project's packages are updated.
 - `version-latest-commit` configuration for auto committing when a project's dependencies are all updated to their latest versions.
+- `version-set-commit` configuration for auto committing when a project's dependency's version is updated.
 
 ## [2018.09.08]
 
