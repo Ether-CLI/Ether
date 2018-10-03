@@ -64,6 +64,9 @@ public final class VersionSet: Command {
         _ = try Process.execute("swift", "package", "update")
         updating.succeed()
 
+        let config = try Configuration.get()
+        try config.commit(with: config.versionSetCommit, on: context, replacements: [package, version])
+        
         if let _ = context.options["xcode"] {
             let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
             _ = xcodeBar.start(on: context.container)

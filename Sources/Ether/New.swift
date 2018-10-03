@@ -51,6 +51,11 @@ public final class New: Command {
         }
 
         newProject.succeed()
+        
+        let config = try Configuration.get()
+        let name = try context.argument("name")
+        try config.commit(with: config.newCommit, on: context, replacements: [name])
+        
         return context.container.future()
     }
     

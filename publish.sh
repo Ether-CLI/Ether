@@ -66,8 +66,9 @@ git add .
 git commit -S -m "Updated Ether version to $TAG"
 git push origin master
 cd ../
-
 rm -rf homebrew-tap
+
+cd Ether/
 rm -rf macOS-sierra.tar.gz
 rm -rf $PACKAGE_NAME
 rm install

@@ -70,7 +70,7 @@ public final class Search: Command {
 struct PackageDescription: Codable {
     let nameWithOwner: String
     let description: String?
-    let license: String?
+    let licenseInfo: String?
     let stargazers: Int?
     
     func print(on context: CommandContext) {
@@ -81,7 +81,8 @@ struct PackageDescription: Codable {
             context.console.info(self.nameWithOwner)
         }
         
-        if let license = self.license {
+        if let licenseInfo = self.licenseInfo {
+            let license = licenseInfo == "NOASSERTION" ? "Unknown" : licenseInfo
             context.console.print("License: " + license)
         }
         

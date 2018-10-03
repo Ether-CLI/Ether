@@ -78,6 +78,9 @@ public final class VersionLatest: Command {
             _ = try Process.execute("swift", "package", "update")
             updating.succeed()
             
+            let config = try Configuration.get()
+            try config.commit(with: config.latestVersionCommit, on: context, replacements: [])
+            
             if let _ = context.options["xcode"] {
                 let xcodeBar = context.console.loadingBar(title: "Generating Xcode Project")
                 _ = xcodeBar.start(on: context.container)
