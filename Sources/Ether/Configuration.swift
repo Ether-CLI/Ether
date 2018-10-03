@@ -38,6 +38,7 @@ public class Configuration: Command {
             "- new-commit: The commit message to use when a new project is generated. Use '&0' as the project name placeholder",
             "- update-commit: The commit message to use when a project's packages are updated",
             "- version-latest-commit: The commit message to use when you update a project's dependencies to their latest versions",
+            "- version-set-commit: The commit message to use when you set a project's dependency to a specific version. Use '&0' as the package name and '&1' as the package's new version placeholders",
             "- signed-commits: If set to a truthy value (true, yes, y, 1), auto-commits will pass in the '-S' flag"
         ]),
         CommandArgument.argument(name: "value", help: ["The new value for the key passed in. If no value is passed in, the key will be removed from the config"])
@@ -118,6 +119,7 @@ public struct Config: Codable, Reflectable {
     public var newCommit: String?
     public var updateCommit: String?
     public var latestVersionCommit: String?
+    public var versionSetCommit: String?
     public var signedCommits: String?
     
     static let properties: [String: WritableKeyPath<Config, String?>] = [
@@ -127,6 +129,7 @@ public struct Config: Codable, Reflectable {
         "new-commit": \.newCommit,
         "update-commit": \.updateCommit,
         "version-latest-commit": \.latestVersionCommit,
+        "version-set-commit": \.versionSetCommit,
         "signed-commits": \.signedCommits
     ]
     
