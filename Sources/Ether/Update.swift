@@ -54,6 +54,9 @@ public final class Update: Command {
             
             updating.succeed()
 
+            let config = try Configuration.get()
+            try config.commit(with: config.updateCommit, on: context, replacements: [])
+            
             if context.options["xcode"] != nil {
                 let xcode = context.console.loadingBar(title: "Generating Xcode Project")
                 _ = xcode.start(on: context.container)
