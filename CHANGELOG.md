@@ -6,6 +6,9 @@
 - `version-latest-commit` configuration for auto committing when a project's dependencies are all updated to their latest versions.
 - `version-set-commit` configuration for auto committing when a project's dependency's version is updated.
 
+### Fixed
+- JSON key used to get license info during package search
+
 ## [2018.09.08]
 
 ### Added
