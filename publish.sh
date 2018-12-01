@@ -1,7 +1,22 @@
+if brew gdate 2>/dev/null; then
+    echo "🍺 Updating Homebrew Formulae"
+    brew upgrade
+else
+    echo "Make sure you have the latest version of LibreSSL installed"
+
+    while true; do
+        read -p "Continue? [Y/n]" yn
+        case $yn in
+            [Yy]* ) break;;
+            [Nn]* ) exit;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+fi
+
 echo "📦  Updating Swift packages..."
 swift package update
 swift package resolve
-
 
 echo "📦  Determining latest Git tag..."
 TAG=$(git describe --abbrev=0 --tags);
